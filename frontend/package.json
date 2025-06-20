@@ -3,6 +3,7 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "home": "https://poll-app-1-q2u1.onrender.com/",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
