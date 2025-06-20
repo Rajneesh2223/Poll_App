@@ -58,54 +58,33 @@ Poll_App/
 
 ---
 
-## ⚙️ Getting Started
 
 ### Clone the repository
 ```bash
 git clone https://github.com/Rajneesh2223/Poll_App.git
 cd Poll_App
 
-
-🔧 Backend Setup
-bash
-Copy
-Edit
+Backend Setup
 cd backend
 npm install
 Create a .env file in /backend:
 
 env
-Copy
-Edit
-PORT=10000
+PORT= 4000
 MONGO_URI=your_mongodb_connection_string
 Start the backend server:
 
-bash
-Copy
-Edit
-npm start
+node server.js
+
 💻 Frontend Setup
-bash
-Copy
-Edit
 cd ../frontend
 npm install
 Create a .env file in /frontend:
 
-env
-Copy
-Edit
-VITE_API_URL=http://localhost:10000
+VITE_API_URL=http://localhost:4000
 For production builds (e.g. Render or Vercel), use:
 
-env
-Copy
-Edit
+
 VITE_API_URL=https://poll-app-backend-mw1p.onrender.com
 Run the development server:
 
-bash
-Copy
-Edit
-npm run dev
