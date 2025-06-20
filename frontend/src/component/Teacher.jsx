@@ -1,6 +1,6 @@
-import { useState, useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import staricon from "../assets/herosection/staricon.svg";
-import { useNavigate } from 'react-router-dom';
 import { socket } from "../utils/socket";
 
 const Teacher = () => {
@@ -9,10 +9,9 @@ const Teacher = () => {
   const [isConnected, setIsConnected] = useState(false);
   const [isRegistering, setIsRegistering] = useState(false);
   const navigate = useNavigate();
-  const hasRegistered = useRef(false); // Prevent multiple registrations
+  const hasRegistered = useRef(false);
 
   useEffect(() => {
-    // Handle socket connection
     const handleConnect = () => {
       console.log("Socket connected:", socket.id);
       setIsConnected(true);
@@ -21,47 +20,45 @@ const Teacher = () => {
     const handleDisconnect = () => {
       console.log("Socket disconnected");
       setIsConnected(false);
-      hasRegistered.current = false; // Reset on disconnect
+      hasRegistered.current = false;
     };
 
     const handleRegistrationSuccess = (data) => {
       console.log("Teacher registration successful:", data);
       setIsRegistering(false);
       hasRegistered.current = true;
-      
-      // Store registration data for the dashboard
-      localStorage.setItem('teacherName', data.name);
-      localStorage.setItem('userRole', data.role);
-      localStorage.setItem('isRegistered', 'true');
-      
-      // Navigate to teacher dashboard
+
+      sessionStorage.setItem("teacherName", data.name);
+      sessionStorage.setItem("userRole", data.role);
+      sessionStorage.setItem("isRegistered", "true");
+
       navigate("/teacher-dashboard");
     };
 
     const handleRegistrationError = (error) => {
       console.error("Teacher registration failed:", error);
-      setError(typeof error === 'string' ? error : "Registration failed. Please try again.");
+      setError(
+        typeof error === "string"
+          ? error
+          : "Registration failed. Please try again."
+      );
       setIsRegistering(false);
       hasRegistered.current = false;
-      
-      // Clear any stored data on error
-      localStorage.removeItem('teacherName');
-      localStorage.removeItem('userRole');
-      localStorage.removeItem('isRegistered');
+
+      sessionStorage.removeItem("teacherName");
+      sessionStorage.removeItem("userRole");
+      sessionStorage.removeItem("isRegistered");
     };
 
-    // Check if already connected
     if (socket.connected) {
       setIsConnected(true);
     }
 
-    // Set up event listeners
     socket.on("connect", handleConnect);
     socket.on("disconnect", handleDisconnect);
     socket.on("registration_success", handleRegistrationSuccess);
     socket.on("registration_error", handleRegistrationError);
 
-    // Cleanup
     return () => {
       socket.off("connect", handleConnect);
       socket.off("disconnect", handleDisconnect);
@@ -71,19 +68,16 @@ const Teacher = () => {
   }, [navigate]);
 
   const handleContinue = () => {
-    // Validate input
     if (!teacherName.trim()) {
       setError("Please enter your name to continue.");
       return;
     }
 
-    // Check socket connection
     if (!isConnected) {
       setError("Connection lost. Please refresh the page.");
       return;
     }
 
-    // Prevent multiple registrations
     if (isRegistering || hasRegistered.current) {
       console.log("Registration already in progress or completed");
       return;
@@ -92,16 +86,14 @@ const Teacher = () => {
     setError("");
     setIsRegistering(true);
 
-    // Emit registration with validation
     const trimmedName = teacherName.trim();
     console.log("Registering teacher:", trimmedName);
-    
-    socket.emit("register_user", { 
-      name: trimmedName, 
-      role: "teacher" 
+
+    socket.emit("register_user", {
+      name: trimmedName,
+      role: "teacher",
     });
 
-    // Fallback timeout in case server doesn't respond
     setTimeout(() => {
       if (isRegistering && !hasRegistered.current) {
         setError("Registration timeout. Please try again.");
@@ -111,7 +103,7 @@ const Teacher = () => {
   };
 
   const handleKeyPress = (e) => {
-    if (e.key === 'Enter') {
+    if (e.key === "Enter") {
       handleContinue();
     }
   };
@@ -147,7 +139,8 @@ const Teacher = () => {
             <span className="font-sora font-semibold text-[#000000]">
               create and manage polls
             </span>
-            , ask questions, <br /> and monitor your students' responses in real-time
+            , ask questions, <br /> and monitor your students' responses in
+            real-time
           </p>
         </div>
 
@@ -182,7 +175,9 @@ const Teacher = () => {
         <div className="flex justify-center items-center">
           <button
             className={`rounded-[34px] text-white align-middle font-sora px-16 w-[233px] h-[57px] ${
-              isRegistering || !isConnected ? 'opacity-50 cursor-not-allowed' : ''
+              isRegistering || !isConnected
+                ? "opacity-50 cursor-not-allowed"
+                : ""
             }`}
             style={{
               background: "linear-gradient(90deg, #7565D9 0%, #4D0ACD 100%)",

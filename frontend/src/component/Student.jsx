@@ -1,6 +1,6 @@
-import { useState, useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import staricon from "../assets/herosection/staricon.svg";
-import { useNavigate } from 'react-router-dom';
 import { socket } from "../utils/socket";
 
 const Student = () => {
@@ -25,18 +25,35 @@ const Student = () => {
     };
 
     const handleRegistrationSuccess = (data) => {
-      console.log("Registration successful:", data);
+      console.log("Student registration successful:", data);
       setIsRegistering(false);
       hasRegistered.current = true;
-      // Navigate with the confirmed user data from server
-      navigate("/question", { state: { userName: data.name, role: data.role } });
+
+      // Store registration data for the question page
+      sessionStorage.setItem("userName", data.name);
+      sessionStorage.setItem("userRole", data.role);
+      sessionStorage.setItem("isRegistered", "true");
+
+      // Navigate to question page (keeping original navigation)
+      navigate("/question", {
+        state: { userName: data.name, role: data.role },
+      });
     };
 
     const handleRegistrationError = (error) => {
-      console.error("Registration failed:", error);
-      setError(typeof error === 'string' ? error : "Registration failed. Please try again.");
+      console.error("Student registration failed:", error);
+      setError(
+        typeof error === "string"
+          ? error
+          : "Registration failed. Please try again."
+      );
       setIsRegistering(false);
       hasRegistered.current = false;
+
+      // Clear any stored data on error
+      sessionStorage.removeItem("userName");
+      sessionStorage.removeItem("userRole");
+      sessionStorage.removeItem("isRegistered");
     };
 
     // Check if already connected
@@ -83,11 +100,11 @@ const Student = () => {
 
     // Emit registration with validation
     const trimmedName = userName.trim();
-    console.log("Registering user:", trimmedName);
-    
-    socket.emit("register_user", { 
-      name: trimmedName, 
-      role: "student" 
+    console.log("Registering student:", trimmedName);
+
+    socket.emit("register_user", {
+      name: trimmedName,
+      role: "student",
     });
 
     // Fallback timeout in case server doesn't respond
@@ -100,7 +117,7 @@ const Student = () => {
   };
 
   const handleKeyPress = (e) => {
-    if (e.key === 'Enter') {
+    if (e.key === "Enter") {
       handleContinue();
     }
   };
@@ -172,7 +189,9 @@ const Student = () => {
         <div className="flex justify-center items-center">
           <button
             className={`rounded-[34px] text-white align-middle font-sora px-16 w-[233px] h-[57px] ${
-              isRegistering || !isConnected ? 'opacity-50 cursor-not-allowed' : ''
+              isRegistering || !isConnected
+                ? "opacity-50 cursor-not-allowed"
+                : ""
             }`}
             style={{
               background: "linear-gradient(90deg, #7565D9 0%, #4D0ACD 100%)",

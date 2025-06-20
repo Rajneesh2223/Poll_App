@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import down from "../assets/herosection/down.png";
 import staricon from "../assets/herosection/staricon.svg";
 import { socket } from "../utils/socket";
@@ -15,30 +15,34 @@ const QuestionDashboard = () => {
   const [isRegistered, setIsRegistered] = useState(false);
   const [teacherName, setTeacherName] = useState("");
 
-  // Chat state
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [hasUnreadMessages, setHasUnreadMessages] = useState(false);
 
-  // Check registration status and get teacher info
   useEffect(() => {
-    const registrationStatus = localStorage.getItem('isRegistered');
-    const storedTeacherName = localStorage.getItem('teacherName');
-    const userRole = localStorage.getItem('userRole');
-    
-    console.log("Checking registration status:", { registrationStatus, storedTeacherName, userRole });
-    
-    if (registrationStatus === 'true' && storedTeacherName && userRole === 'teacher') {
+    const registrationStatus = sessionStorage.getItem("isRegistered");
+    const storedTeacherName = sessionStorage.getItem("teacherName");
+    const userRole = sessionStorage.getItem("userRole");
+
+    console.log("Checking registration status:", {
+      registrationStatus,
+      storedTeacherName,
+      userRole,
+    });
+
+    if (
+      registrationStatus === "true" &&
+      storedTeacherName &&
+      userRole === "teacher"
+    ) {
       console.log("Teacher already registered:", storedTeacherName);
       setIsRegistered(true);
       setTeacherName(storedTeacherName);
     } else {
-      // If not properly registered, redirect back to teacher registration
       console.log("Teacher not properly registered, redirecting...");
-      window.location.href = '/teacher';
+      window.location.href = "/teacher";
       return;
     }
 
-    // Set up socket event listeners for any additional registration events
     const handleRegistrationSuccess = (data) => {
       console.log("Additional registration success:", data);
       setIsRegistered(true);
@@ -101,26 +105,28 @@ const QuestionDashboard = () => {
   };
 
   const preparePollData = () => {
-    const trimmedOptions = options.map((opt) => opt.text.trim()).filter((text) => text);
+    const trimmedOptions = options
+      .map((opt) => opt.text.trim())
+      .filter((text) => text);
     const validOptions = options.filter((opt) => opt.text.trim());
-  
+
     if (!question.trim() || validOptions.length < 2) {
       alert("Please enter a question and at least two valid options.");
       return null;
     }
-  
+
     const correctIndex = options.findIndex((opt) => opt.isCorrect);
-  
+
     if (correctIndex === -1) {
       alert("Please select one correct answer.");
       return null;
     }
-  
+
     return {
       question: question.trim(),
       options: trimmedOptions,
       correctAnswerIndex: correctIndex,
-      duration: 60
+      duration: 60,
     };
   };
 
@@ -134,11 +140,9 @@ const QuestionDashboard = () => {
     if (pollData) {
       console.log("Creating poll:", pollData);
       socket.emit("create_poll", pollData);
-      
-      // Listen for poll creation confirmation
+
       const handlePollCreated = () => {
         alert("Poll sent successfully!");
-        // Reset form after successful poll creation
         setQuestion("");
         setOptions([
           { id: 1, text: "", isCorrect: true },
@@ -147,21 +151,19 @@ const QuestionDashboard = () => {
         setNextId(3);
         socket.off("new_poll", handlePollCreated);
       };
-      
+
       socket.on("new_poll", handlePollCreated);
-      
-      // Also listen for any errors
+
       const handleError = (error) => {
         console.error("Poll creation error:", error);
         alert(`Failed to create poll: ${error}`);
         socket.off("error", handleError);
       };
-      
+
       socket.once("error", handleError);
     }
   };
 
-  // Show loading state if not registered
   if (!isRegistered) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -189,7 +191,7 @@ const QuestionDashboard = () => {
 
   return (
     <div className="">
-      <div className="w-full space-y-8 pt-[87px] pl-[134px] pr-[134px]">
+      <div className="max-w-7xl mx-auto space-y-8 pt-[87px] pl-[134px] pr-[134px]">
         <div className="flex justify-between items-center">
           <button
             className="px-2.5 py-1.5 rounded-3xl"
@@ -204,11 +206,13 @@ const QuestionDashboard = () => {
               </h1>
             </div>
           </button>
-          
+
           {/* Display teacher name */}
           <div className="text-right">
             <p className="text-sm text-gray-600">Welcome back,</p>
-            <p className="font-sora font-semibold text-lg text-gray-800">{teacherName}</p>
+            <p className="font-sora font-semibold text-lg text-gray-800">
+              {teacherName}
+            </p>
           </div>
         </div>
 
@@ -249,7 +253,6 @@ const QuestionDashboard = () => {
             </div>
           </div>
 
-          {/* Edit Options Section */}
           <div className="flex justify-between items-start mb-8">
             <div className="flex-1 mr-8">
               <h2 className="text-xl font-semibold text-gray-900 mb-4">
@@ -373,14 +376,14 @@ const QuestionDashboard = () => {
           Ask Question
         </button>
       </div>
-      
-      <ChatButton 
-        isOpen={isChatOpen} 
+
+      <ChatButton
+        isOpen={isChatOpen}
         onClick={handleChatToggle}
         hasUnreadMessages={hasUnreadMessages}
       />
-      <ChatWindow 
-        isOpen={isChatOpen} 
+      <ChatWindow
+        isOpen={isChatOpen}
         onClose={() => setIsChatOpen(false)}
         isTeacher={true}
         userName={teacherName}

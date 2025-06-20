@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
-import staricon from "../assets/herosection/staricon.svg"
-import { socket } from "../utils/socket";
 import { useLocation } from "react-router-dom";
+import staricon from "../assets/herosection/staricon.svg";
+import { socket } from "../utils/socket";
 import ChatButton from "./ChatButton";
 import ChatWindow from "./ChatWindow";
 
@@ -14,12 +14,22 @@ const StudentPollInterface = () => {
   const [timeLeft, setTimeLeft] = useState(60);
   const [isActive, setIsActive] = useState(true);
   const [isRegistered, setIsRegistered] = useState(false);
-  console.log(pollData , isPollActive , isRegistered)
-  
+  const [isSocketConnected, setIsSocketConnected] = useState(false);
+  console.log(
+    pollData,
+    isPollActive,
+    selectedOption,
+    hasVoted,
+    showResults,
+    timeLeft,
+    isActive,
+    isRegistered,
+    isSocketConnected
+  );
+
   const location = useLocation();
   const userName = location.state?.userName;
 
-  // Chat state
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [hasUnreadMessages, setHasUnreadMessages] = useState(false);
 
@@ -28,14 +38,47 @@ const StudentPollInterface = () => {
     if (!isChatOpen) setHasUnreadMessages(false);
   };
 
-  // User registration effect
   useEffect(() => {
-    if (userName && !isRegistered) {
+    const handleConnect = () => {
+      console.log("Socket connected");
+      setIsSocketConnected(true);
+    };
+
+    const handleDisconnect = () => {
+      console.log("Socket disconnected");
+      setIsSocketConnected(false);
+      setIsRegistered(false);
+    };
+
+    const handleReconnect = () => {
+      console.log("Socket reconnected");
+      setIsSocketConnected(true);
+
+      if (userName) {
+        setIsRegistered(false);
+      }
+    };
+
+    if (socket.connected) {
+      setIsSocketConnected(true);
+    }
+
+    socket.on("connect", handleConnect);
+    socket.on("disconnect", handleDisconnect);
+    socket.on("reconnect", handleReconnect);
+
+    return () => {
+      socket.off("connect", handleConnect);
+      socket.off("disconnect", handleDisconnect);
+      socket.off("reconnect", handleReconnect);
+    };
+  }, [userName]);
+
+  useEffect(() => {
+    if (userName && !isRegistered && isSocketConnected) {
       console.log("Registering user:", userName);
       socket.emit("register_user", { name: userName, role: "student" });
     }
-
-    // Registration response handlers
     const handleRegistrationSuccess = (data) => {
       console.log("Registration successful:", data);
       setIsRegistered(true);
@@ -44,28 +87,40 @@ const StudentPollInterface = () => {
     const handleRegistrationError = (error) => {
       console.error("Registration failed:", error);
       alert(`Registration failed: ${error}`);
+
+      setTimeout(() => {
+        if (isSocketConnected && userName) {
+          console.log("Retrying registration...");
+          socket.emit("register_user", { name: userName, role: "student" });
+        }
+      }, 2000);
     };
 
     const handleSocketError = (error) => {
       console.error("Socket error:", error);
     };
 
-    socket.on("registration_success", handleRegistrationSuccess);
-    socket.on("registration_error", handleRegistrationError);
-    socket.on("error", handleSocketError);
+    if (isSocketConnected) {
+      socket.on("registration_success", handleRegistrationSuccess);
+      socket.on("registration_error", handleRegistrationError);
+      socket.on("error", handleSocketError);
+    }
 
     return () => {
       socket.off("registration_success", handleRegistrationSuccess);
       socket.off("registration_error", handleRegistrationError);
       socket.off("error", handleSocketError);
     };
-  }, [userName, isRegistered]);
+  }, [userName, isRegistered, isSocketConnected]);
 
-  // Poll event handlers
   useEffect(() => {
+    if (!isRegistered || !isSocketConnected) {
+      return;
+    }
+
     const handleNewPoll = (poll) => {
       console.log("New poll received:", poll);
-      
+
       const options = poll.options.map((text, index) => ({
         id: index + 1,
         text,
@@ -83,14 +138,14 @@ const StudentPollInterface = () => {
 
     const handleUpdateStats = (result) => {
       console.log("Stats update received:", result);
-      
+
       if (!pollData) return;
 
       const newOptions = pollData.options.map((option, index) => ({
         ...option,
-        votes: result.counts[index] || 0, // Use counts instead of percentages
+        votes: result.counts[index] || 0,
       }));
-      
+
       setPollData({ ...pollData, options: newOptions });
     };
 
@@ -101,24 +156,29 @@ const StudentPollInterface = () => {
     };
 
     const handleAnswerSubmitted = ({ selectedIndex, isCorrect }) => {
-      console.log("Answer submitted confirmation:", { selectedIndex, isCorrect });
-      // You could show a success message here
+      console.log("Answer submitted confirmation:", {
+        selectedIndex,
+        isCorrect,
+      });
     };
+
+    socket.emit("get_current_poll");
 
     socket.on("new_poll", handleNewPoll);
     socket.on("update_stats", handleUpdateStats);
     socket.on("poll_ended", handlePollEnded);
     socket.on("answer_submitted", handleAnswerSubmitted);
+    socket.on("current_poll", handleNewPoll);
 
     return () => {
       socket.off("new_poll", handleNewPoll);
       socket.off("update_stats", handleUpdateStats);
       socket.off("poll_ended", handlePollEnded);
       socket.off("answer_submitted", handleAnswerSubmitted);
+      socket.off("current_poll", handleNewPoll);
     };
-  }, [pollData]);
+  }, [isRegistered, isSocketConnected, pollData]);
 
-  // Timer effect
   useEffect(() => {
     let interval = null;
     if (isActive && timeLeft > 0 && !hasVoted && isPollActive) {
@@ -186,9 +246,26 @@ const StudentPollInterface = () => {
     0
   );
 
-  console.log("ispollactive ", isPollActive ,"polldate" , pollData ,"isregistered", isRegistered)
-  // Show waiting screen if no poll or not registered
-  if (!isPollActive || !pollData || !isRegistered) {
+  console.log(
+    "Socket connected:",
+    isSocketConnected,
+    "Registered:",
+    isRegistered,
+    "Poll active:",
+    isPollActive,
+    "Poll data:",
+    pollData
+  );
+
+  if (!isSocketConnected || !isRegistered || (!isPollActive && !pollData)) {
+    let statusMessage = "Connecting...";
+
+    if (!isSocketConnected) {
+      statusMessage = "Connecting to server...";
+    } else {
+      statusMessage = "Wait for the teacher to ask questions..";
+    }
+
     return (
       <div className="min-h-screen flex flex-col justify-center items-center px-4 bg-white">
         <div className="flex justify-center mb-4">
@@ -199,11 +276,7 @@ const StudentPollInterface = () => {
             }}
           >
             <div className="flex items-center space-x-2">
-              <img
-                src={staricon}
-                alt="star icon"
-                className="w-6 h-6"
-              />
+              <img src={staricon} alt="star icon" className="w-6 h-6" />
               <h1 className="font-sora font-semibold text-white text-lg">
                 Intervue Poll
               </h1>
@@ -211,18 +284,23 @@ const StudentPollInterface = () => {
           </button>
         </div>
         <p className="text-center font-sora font-semibold text-xl text-gray-700">
-          {!isRegistered ? "Connecting..." : "Wait for the teacher to ask questions.."}
+          {statusMessage}
         </p>
         <div className="mt-4 text-sm text-gray-500">
           {userName && `Logged in as: ${userName}`}
         </div>
-        <ChatButton 
-          isOpen={isChatOpen} 
+        {!isSocketConnected && (
+          <div className="mt-2 text-xs text-red-500">
+            Connection status: Disconnected
+          </div>
+        )}
+        <ChatButton
+          isOpen={isChatOpen}
           onClick={handleChatToggle}
           hasUnreadMessages={hasUnreadMessages}
         />
-        <ChatWindow 
-          isOpen={isChatOpen} 
+        <ChatWindow
+          isOpen={isChatOpen}
           onClose={() => setIsChatOpen(false)}
           isTeacher={false}
           userName={userName || "Student"}
@@ -234,7 +312,6 @@ const StudentPollInterface = () => {
   return (
     <div className="max-w-3xl mx-auto flex items-center justify-center px-4 min-h-screen">
       <div className="w-full">
-        {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-lg font-semibold text-gray-800">Question</h2>
           {!showResults && (
@@ -257,88 +334,89 @@ const StudentPollInterface = () => {
           )}
         </div>
 
-        {/* Question */}
         <div className="mb-6">
           <div className="bg-gray-700 text-white p-3 rounded">
             <p className="text-sm font-medium">{pollData.question}</p>
           </div>
         </div>
 
-        {/* Options */}
         <div className="space-y-3 mb-6">
           {showResults
             ? optionsWithPercentages.map((option) => (
-              <div key={option.id} className="relative">
-                <div className="flex items-center">
-                  <div className="flex-1 relative">
-                    <div className="flex items-center bg-gray-100 rounded-md h-10 relative overflow-hidden">
-                      <div
-                        className={`h-full rounded-md transition-all duration-500 ${getColorIntensity(
-                          option.percentage
-                        )}`}
-                        style={{ width: `${option.percentage}%` }}
-                      ></div>
-                      <div className="absolute left-3 flex items-center space-x-2 z-10">
-                        <div className="w-5 h-5 bg-white rounded-full flex items-center justify-center text-xs font-semibold text-gray-700">
-                          {option.id}
-                        </div>
-                        <span
-                          className={`text-sm font-medium ${option.percentage > 30
-                              ? "text-white"
-                              : "text-gray-700"
+                <div key={option.id} className="relative">
+                  <div className="flex items-center">
+                    <div className="flex-1 relative">
+                      <div className="flex items-center bg-gray-100 rounded-md h-10 relative overflow-hidden">
+                        <div
+                          className={`h-full rounded-md transition-all duration-500 ${getColorIntensity(
+                            option.percentage
+                          )}`}
+                          style={{ width: `${option.percentage}%` }}
+                        ></div>
+                        <div className="absolute left-3 flex items-center space-x-2 z-10">
+                          <div className="w-5 h-5 bg-white rounded-full flex items-center justify-center text-xs font-semibold text-gray-700">
+                            {option.id}
+                          </div>
+                          <span
+                            className={`text-sm font-medium ${
+                              option.percentage > 30
+                                ? "text-white"
+                                : "text-gray-700"
                             }`}
-                        >
-                          {option.text}
-                        </span>
+                          >
+                            {option.text}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="ml-3 min-w-16 text-right">
+                      <span className="text-sm font-semibold text-gray-700">
+                        {option.percentage}%
+                      </span>
+                      <div className="text-xs text-gray-500">
+                        {option.votes} votes
                       </div>
                     </div>
                   </div>
-                  <div className="ml-3 min-w-16 text-right">
-                    <span className="text-sm font-semibold text-gray-700">
-                      {option.percentage}%
-                    </span>
-                    <div className="text-xs text-gray-500">
-                      {option.votes} votes
-                    </div>
-                  </div>
                 </div>
-              </div>
-            ))
+              ))
             : pollData.options.map((option) => (
-              <div key={option.id} className="relative">
-                <button
-                  onClick={() => handleOptionSelect(option.id)}
-                  disabled={timeLeft === 0 || hasVoted}
-                  className={`w-full flex items-center bg-gray-100 rounded-md h-10 relative overflow-hidden transition-all duration-200 ${selectedOption === option.id
-                      ? "ring-2 ring-purple-500 bg-purple-50"
-                      : "hover:bg-gray-200"
-                    } ${timeLeft === 0 || hasVoted
-                      ? "opacity-50 cursor-not-allowed"
-                      : "cursor-pointer"
+                <div key={option.id} className="relative">
+                  <button
+                    onClick={() => handleOptionSelect(option.id)}
+                    disabled={timeLeft === 0 || hasVoted}
+                    className={`w-full flex items-center bg-gray-100 rounded-md h-10 relative overflow-hidden transition-all duration-200 ${
+                      selectedOption === option.id
+                        ? "ring-2 ring-purple-500 bg-purple-50"
+                        : "hover:bg-gray-200"
+                    } ${
+                      timeLeft === 0 || hasVoted
+                        ? "opacity-50 cursor-not-allowed"
+                        : "cursor-pointer"
                     }`}
-                >
-                  {selectedOption === option.id && (
-                    <div className="absolute inset-0 bg-purple-100 opacity-50"></div>
-                  )}
-                  <div className="absolute left-3 flex items-center space-x-2 z-10">
-                    <div
-                      className={`w-5 h-5 rounded-full flex items-center justify-center text-xs font-semibold ${selectedOption === option.id
-                          ? "bg-purple-500 text-white"
-                          : "bg-white text-gray-700"
+                  >
+                    {selectedOption === option.id && (
+                      <div className="absolute inset-0 bg-purple-100 opacity-50"></div>
+                    )}
+                    <div className="absolute left-3 flex items-center space-x-2 z-10">
+                      <div
+                        className={`w-5 h-5 rounded-full flex items-center justify-center text-xs font-semibold ${
+                          selectedOption === option.id
+                            ? "bg-purple-500 text-white"
+                            : "bg-white text-gray-700"
                         }`}
-                    >
-                      {option.id}
+                      >
+                        {option.id}
+                      </div>
+                      <span className="text-sm font-medium text-gray-700">
+                        {option.text}
+                      </span>
                     </div>
-                    <span className="text-sm font-medium text-gray-700">
-                      {option.text}
-                    </span>
-                  </div>
-                </button>
-              </div>
-            ))}
+                  </button>
+                </div>
+              ))}
         </div>
 
-        {/* Submit or Info */}
         {showResults ? (
           <>
             <div className="mb-4 text-center">
@@ -364,10 +442,11 @@ const StudentPollInterface = () => {
               <button
                 onClick={handleSubmitVote}
                 disabled={!selectedOption || timeLeft === 0 || hasVoted}
-                className={`px-8 py-3 rounded-full font-medium transition-all duration-200 ${selectedOption && timeLeft > 0 && !hasVoted
+                className={`px-8 py-3 rounded-full font-medium transition-all duration-200 ${
+                  selectedOption && timeLeft > 0 && !hasVoted
                     ? "bg-gradient-to-r from-purple-600 to-purple-800 hover:from-purple-700 hover:to-purple-900 text-white shadow-lg hover:shadow-xl"
                     : "bg-gray-300 text-gray-500 cursor-not-allowed"
-                  }`}
+                }`}
               >
                 Submit Answer
               </button>
@@ -389,13 +468,13 @@ const StudentPollInterface = () => {
           </>
         )}
       </div>
-      <ChatButton 
-        isOpen={isChatOpen} 
+      <ChatButton
+        isOpen={isChatOpen}
         onClick={handleChatToggle}
         hasUnreadMessages={hasUnreadMessages}
       />
-      <ChatWindow 
-        isOpen={isChatOpen} 
+      <ChatWindow
+        isOpen={isChatOpen}
         onClose={() => setIsChatOpen(false)}
         isTeacher={false}
         userName={userName || "Student"}
