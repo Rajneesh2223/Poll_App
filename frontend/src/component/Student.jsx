@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import staricon from "../assets/herosection/staricon.svg";
 import { socket } from "../utils/socket";
+import CommonLogo from "./CommonLogo";
 
 const Student = () => {
   const [userName, setUserName] = useState("");
@@ -125,21 +125,7 @@ const Student = () => {
   return (
     <div className="min-h-screen flex items-center justify-center px-4">
       <div className="max-w-7xl w-full space-y-8">
-        <div className="flex justify-center">
-          <button
-            className="px-2.5 py-1.5 rounded-3xl"
-            style={{
-              background: "linear-gradient(90deg, #7565D9 0%, #4D0ACD 100%)",
-            }}
-          >
-            <div className="flex items-center space-x-2">
-              <img src={staricon} alt="star icon" className="w-6 h-6" />
-              <h1 className="font-sora font-semibold text-white text-lg">
-                Intervue Poll
-              </h1>
-            </div>
-          </button>
-        </div>
+        <CommonLogo />
 
         <div className="text-center space-y-4">
           <h1 className="text-4xl font-sora font-normal">

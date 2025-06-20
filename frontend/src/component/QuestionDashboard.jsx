@@ -4,6 +4,7 @@ import staricon from "../assets/herosection/staricon.svg";
 import { socket } from "../utils/socket";
 import ChatButton from "./ChatButton";
 import ChatWindow from "./ChatWindow";
+import CommonLogo from "./CommonLogo";
 
 const QuestionDashboard = () => {
   const [options, setOptions] = useState([
@@ -192,23 +193,9 @@ const QuestionDashboard = () => {
   return (
     <div className="min-h-screen">
       <div className="max-w-7xl mx-auto space-y-6 md:space-y-8 pt-6 md:pt-[87px] px-4 md:px-8 lg:px-[134px]">
-        {/* Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-4 sm:space-y-0">
-          <button
-            className="px-2.5 py-1.5 rounded-3xl"
-            style={{
-              background: "linear-gradient(90deg, #7565D9 0%, #4D0ACD 100%)",
-            }}
-          >
-            <div className="flex items-center space-x-2">
-              <img src={staricon} alt="star icon" className="w-6 h-6" />
-              <h1 className="font-sora font-semibold text-white text-lg">
-                Intervue Poll
-              </h1>
-            </div>
-          </button>
+          <CommonLogo />
 
-          {/* Teacher name display */}
           <div className="text-left sm:text-right">
             <p className="text-sm text-gray-600">Welcome back,</p>
             <p className="font-sora font-semibold text-lg text-gray-800">
@@ -217,7 +204,6 @@ const QuestionDashboard = () => {
           </div>
         </div>
 
-        {/* Title section */}
         <div className="space-y-4">
           <h1 className="text-2xl md:text-4xl font-sora font-normal">
             Let's{" "}
@@ -231,9 +217,7 @@ const QuestionDashboard = () => {
           </p>
         </div>
 
-        {/* Main content */}
         <div className="w-full bg-white">
-          {/* Question header */}
           <div className="flex flex-wrap items-center justify-between mb-6 gap-4">
             <h1 className="text-xl md:text-2xl font-semibold text-gray-900">
               Enter your question
@@ -244,7 +228,6 @@ const QuestionDashboard = () => {
             </div>
           </div>
 
-          {/* Question textarea */}
           <div className="relative mb-8">
             <textarea
               placeholder="Enter your question here..."
@@ -257,9 +240,7 @@ const QuestionDashboard = () => {
             </div>
           </div>
 
-          {/* Options and correct answer section */}
           <div className="flex flex-col lg:flex-row justify-between items-start mb-8 space-y-8 lg:space-y-0 lg:space-x-8">
-            {/* Edit Options */}
             <div className="flex-1 w-full lg:w-auto">
               <h2 className="text-lg md:text-xl font-semibold text-gray-900 mb-4">
                 Edit Options
@@ -305,7 +286,6 @@ const QuestionDashboard = () => {
               </div>
             </div>
 
-            {/* Is it Correct Section */}
             <div className="w-full lg:w-auto lg:flex-shrink-0">
               <h2 className="text-lg md:text-xl font-semibold text-gray-900 mb-4">
                 Is it Correct?
@@ -369,10 +349,8 @@ const QuestionDashboard = () => {
         </div>
       </div>
 
-      {/* Divider */}
       <hr className="border-t-2 border-t-[#B6B6B6] mx-4 md:mx-8 lg:mx-[134px]" />
 
-      {/* Submit button */}
       <div className="flex justify-center md:justify-end mt-4 px-4 md:px-8 lg:pr-[134px] pb-6">
         <button
           className="rounded-[34px] text-white font-sora px-8 md:px-14 py-4 w-full sm:w-auto md:w-[233px] h-[57px]"

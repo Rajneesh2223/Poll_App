@@ -1,6 +1,7 @@
 import { Menu, X } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import staricon from "../assets/herosection/staricon.svg";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -13,7 +14,18 @@ const Navbar = () => {
           to="/"
           className="text-xl font-bold text-[#4D0ACD] hover:text-purple-700 transition"
         >
-          Poll App
+          <div className="flex justify-center">
+            <button
+              className="px-2.5 py-1.5 rounded-3xl"
+              style={{
+                background: "linear-gradient(90deg, #7565D9 0%, #4D0ACD 100%)",
+              }}
+            >
+              <div className="flex items-center space-x-2">
+                <img src={staricon} alt="star icon" className="w-6 h-6" />
+              </div>
+            </button>
+          </div>
         </Link>
 
         <button
