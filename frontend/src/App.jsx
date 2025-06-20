@@ -1,18 +1,18 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
 import Hero from "./component/Hero";
-import Student from "./component/Student";
+import Navbar from "./component/Navbar";
 import QuestionDashboard from "./component/QuestionDashboard";
-import TeacherPollResults from "./component/TeacherPollResults";
+import Student from "./component/Student";
 import StudentPollInterface from "./component/StudentPollInterface";
 import StudentQuestion from "./component/StudentQuestion";
 import Teacher from "./component/Teacher";
-import Navbar from "./component/Navbar";
 import TeacherPollHistory from "./component/TeacherPollHistory";
+import TeacherPollResults from "./component/TeacherPollResults";
 
 const App = () => {
   return (
     <Router>
-      <Navbar /> {/* 👈 This will be shown on all routes */}
+      <Navbar />
       <Routes>
         <Route path="/" element={<Hero />} />
         <Route path="/student" element={<Student />} />
