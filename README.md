@@ -44,19 +44,6 @@ Poll_App/
 
 ---
 
-## 🛡️ Roles & Access
-
-| Feature               | Student | Teacher |
-|-----------------------|---------|---------|
-| Join session          | ✅       | ✅       |
-| Vote in polls         | ✅       | ❌       |
-| View live stats       | ✅       | ✅       |
-| View poll history     | ❌       | ✅       |
-| Create polls          | ❌       | ✅       |
-| Send chat messages    | ✅       | ✅       |
-| Kick users            | ❌       | ✅       |
-
----
 
 
 ### Clone the repository
