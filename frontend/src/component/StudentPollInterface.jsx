@@ -156,11 +156,11 @@ const StudentPollInterface = () => {
   };
 
   const getColorIntensity = (percentage) => {
-    if (percentage >= 70) return "bg-purple-600";
-    if (percentage >= 50) return "bg-purple-500";
-    if (percentage >= 30) return "bg-purple-400";
-    if (percentage >= 15) return "bg-purple-300";
-    if (percentage >= 5) return "bg-purple-200";
+    if (percentage >= 70) return "bg-[#6766D5]";
+    if (percentage >= 50) return "bg-[#6766D5]";
+    if (percentage >= 30) return "bg-[#6766D5]";
+    if (percentage >= 15) return "bg-[#6766D5]";
+    if (percentage >= 5) return "bg-[#6766D5]";
     return "bg-gray-200";
   };
 

@@ -3,6 +3,8 @@ const http = require("http");
 const cors = require("cors");
 const { Server } = require("socket.io");
 const registerSocketEvents = require("./socket");
+const connectDB = require("./config/db");
+const pollroutes = require("./routes/pollroute")
 
 const app = express();
 app.use(cors());
@@ -13,7 +15,11 @@ const io = new Server(server, {
     origin: "*",
   },
 });
+// Ie5gweINxIu0LXDk
 
+connectDB()
+app.use(express.json());
+app.use("/api", pollroutes);
 // Register events from separate file
 registerSocketEvents(io);
 

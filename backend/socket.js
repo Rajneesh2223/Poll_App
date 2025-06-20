@@ -1,6 +1,8 @@
+const { savePoll, getAllPolls } = require("./controller/pollcontroller"); 
 let currentPoll = null;
 let responses = [];
 let chatHistory = [];
+let pollHistory = [];
 const connectedUsers = {};
 
 function registerSocketEvents(io) {
@@ -100,40 +102,47 @@ function registerSocketEvents(io) {
     });
 
     // Teacher creates a poll
-    socket.on("create_poll", (poll) => {
-      const user = connectedUsers[socket.id];
-      if (!user || user.role !== "teacher") {
-        socket.emit("error", "Only teachers can create polls");
-        return;
-      }
-
-      try {
-        currentPoll = { 
-          ...poll, 
-          startTime: Date.now(),
-          createdBy: user.name
-        };
-        responses = [];
-        
-        console.log("Poll created by", user.name, ":", poll.question);
-        io.emit("new_poll", currentPoll);
-
-        // Auto-end poll after duration
-        if (poll.duration && poll.duration > 0) {
-          setTimeout(() => {
-            if (currentPoll && currentPoll.startTime === currentPoll.startTime) {
-              const results = getResults();
-              io.emit("poll_ended", results);
-              console.log("Poll ended with", responses.length, "responses");
-              currentPoll = null;
-            }
+    socket.on("create_poll", async (poll) => {
+        const user = connectedUsers[socket.id];
+        if (!user || user.role !== "teacher") return;
+      
+        try {
+          currentPoll = { ...poll, startTime: Date.now(), createdBy: user.name };
+          responses = [];
+      
+          io.emit("new_poll", currentPoll);
+      
+          // Save poll to DB after poll ends
+          setTimeout(async () => {
+            const results = getResults();
+            io.emit("poll_ended", results);
+      
+            const pollToSave = {
+              ...currentPoll,
+              responses,
+            };
+      
+            await savePoll(pollToSave);
+            currentPoll = null;
           }, poll.duration * 1000);
+        } catch (error) {
+          console.error("Poll creation error:", error);
         }
-      } catch (error) {
-        console.error("Poll creation error:", error);
-        socket.emit("error", "Failed to create poll");
-      }
-    });
+      });
+      
+      socket.on("get_poll_history", async () => {
+        const user = connectedUsers[socket.id];
+        console.log("location",user)
+        if (!user || user.role !== "teacher") return;
+      
+        try {
+          const history = await getAllPolls();
+          socket.emit("poll_history", history);
+        } catch (error) {
+          console.error("Fetch history failed:", error);
+        }
+      });
+      
 
     // Student submits vote
     socket.on("submit_answer", ({ selectedIndex }) => {

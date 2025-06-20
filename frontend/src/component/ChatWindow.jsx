@@ -91,12 +91,12 @@ const ChatWindow = ({ isOpen, onClose, isTeacher, userName }) => {
     <div className="fixed bottom-20 right-4 w-80 h-96 bg-white rounded-lg shadow-xl border border-gray-200 flex flex-col z-50">
       {/* Header with Tabs */}
       <div className="flex flex-col">
-        <div className="flex items-center justify-between p-3 border-b">
+        {/* <div className="flex items-center justify-between p-3 border-b">
           <div className="flex items-center">
             {activeTab === 'chat' ? (
-              <MessageCircle className="h-5 w-5 text-[#8F64E1] mr-2" />
+              <MessageCircle className="h-5 w-5 text-[#5A66D1] mr-2" />
             ) : (
-              <Users className="h-5 w-5 text-[#8F64E1] mr-2" />
+              <Users className="h-5 w-5 text-[#5A66D1] mr-2" />
             )}
             <h3 className="font-semibold text-gray-900">
               {activeTab === 'chat' ? 'Chat' : 'Participants'} ({userList.length})
@@ -109,17 +109,17 @@ const ChatWindow = ({ isOpen, onClose, isTeacher, userName }) => {
             <X className="h-4 w-4 text-gray-600" />
           </button>
         </div>
-        
+         */}
         {/* Tab Buttons */}
         <div className="flex border-b">
           <button
-            className={`flex-1 py-2 text-sm font-medium ${activeTab === 'chat' ? 'text-[#8F64E1] border-b-2 border-[#8F64E1]' : 'text-gray-500'}`}
+            className={`flex-1 py-2 text-sm font-medium ${activeTab === 'chat' ? 'text-[#5A66D1] border-b-2 border-[#5A66D1]' : 'text-gray-500'}`}
             onClick={() => setActiveTab('chat')}
           >
             Chat
           </button>
           <button
-            className={`flex-1 py-2 text-sm font-medium ${activeTab === 'participants' ? 'text-[#8F64E1] border-b-2 border-[#8F64E1]' : 'text-gray-500'}`}
+            className={`flex-1 py-2 text-sm font-medium ${activeTab === 'participants' ? 'text-[#5A66D1] border-b-2 border-[#5A66D1]' : 'text-gray-500'}`}
             onClick={() => setActiveTab('participants')}
           >
             Participants
@@ -145,7 +145,7 @@ const ChatWindow = ({ isOpen, onClose, isTeacher, userName }) => {
                   <div
                     className={`max-w-[70%] rounded-lg p-3 ${
                       message.sender === userName
-                        ? 'bg-[#8F64E1] text-white'
+                        ? 'bg-[#5A66D1] text-white'
                         : message.isTeacher
                         ? 'bg-blue-600 text-white'
                         : 'bg-gray-600 text-white'
@@ -213,14 +213,14 @@ const ChatWindow = ({ isOpen, onClose, isTeacher, userName }) => {
               value={newMessage}
               onChange={(e) => setNewMessage(e.target.value)}
               placeholder="Type a message..."
-              className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#8F64E1] focus:border-transparent text-sm"
+              className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5A66D1] focus:border-transparent text-sm"
               maxLength={500}
               disabled={!socket?.connected}
             />
             <button
               type="submit"
               disabled={!newMessage.trim() || !socket?.connected}
-              className="px-3 py-2 bg-[#8F64E1] text-white rounded-lg hover:bg-purple-700 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
+              className="px-3 py-2 bg-[#5A66D1] text-white rounded-lg hover:bg-purple-700 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
             >
               <Send className="h-4 w-4" />
             </button>
