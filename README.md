@@ -36,11 +36,11 @@ A real-time polling web application where teachers can create polls, students ca
 ---
 
 ## 📁 Folder Structure
-
+```
 Poll_App/
 ├── frontend/ # React Vite frontend
 └── backend/ # Node.js + Express + Socket.IO backend
-
+```
 
 ---
 
