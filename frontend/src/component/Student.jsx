@@ -123,32 +123,32 @@ const Student = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4">
-      <div className="max-w-7xl w-full space-y-8">
+    <div className="min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl w-full space-y-6 sm:space-y-8">
         <CommonLogo />
 
-        <div className="text-center space-y-4">
-          <h1 className="text-4xl font-sora font-normal">
+        <div className="text-center space-y-3 sm:space-y-4 px-4">
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-sora font-normal">
             Let's{" "}
-            <span className="font-sora text-4xl font-semibold">
+            <span className="font-sora text-2xl sm:text-3xl lg:text-4xl font-semibold">
               Get Started{" "}
             </span>
           </h1>
-          <p className="text-xl text-[#00000080] font-sora">
+          <p className="text-base sm:text-lg lg:text-xl text-[#00000080] font-sora max-w-4xl mx-auto leading-relaxed">
             If you're a student, you'll be able to{" "}
             <span className="font-sora font-semibold text-[#000000]">
               submit your answers
             </span>
-            , participate in live <br /> polls, and see how your responses
-            compare with your classmates
+            , participate in live polls, and see how your responses compare with
+            your classmates
           </p>
         </div>
 
-        <div className="flex justify-center">
-          <div className="flex flex-col space-y-2 w-[507px]">
+        <div className="flex justify-center px-4">
+          <div className="flex flex-col space-y-2 w-full max-w-md sm:max-w-lg">
             <label
               htmlFor="name"
-              className="text-xl font-normal font-sora text-gray-700"
+              className="text-lg sm:text-xl font-normal font-sora text-gray-700"
             >
               Enter Your Name
             </label>
@@ -160,10 +160,12 @@ const Student = () => {
               onChange={(e) => setUserName(e.target.value)}
               onKeyPress={handleKeyPress}
               placeholder="Your name"
-              className="font-sora font-normal text-xl px-5 py-5 border border-gray-300 rounded-xs focus:outline-none focus:ring-2 focus:ring-blue-500 bg-[#F2F2F2]"
+              className="font-sora font-normal text-lg sm:text-xl px-4 sm:px-5 py-4 sm:py-5 border border-gray-300 rounded-xs focus:outline-none focus:ring-2 focus:ring-blue-500 bg-[#F2F2F2] w-full"
               disabled={isRegistering}
             />
-            {error && <span className="text-red-500 text-sm">{error}</span>}
+            {error && (
+              <span className="text-red-500 text-sm break-words">{error}</span>
+            )}
             {!isConnected && (
               <span className="text-orange-500 text-sm">
                 Connecting to server...
@@ -172,12 +174,12 @@ const Student = () => {
           </div>
         </div>
 
-        <div className="flex justify-center items-center">
+        <div className="flex justify-center items-center px-4">
           <button
-            className={`rounded-[34px] text-white align-middle font-sora px-16 w-[233px] h-[57px] ${
+            className={`rounded-[34px] text-white font-sora px-8 sm:px-12 lg:px-16 py-3 sm:py-4 w-full max-w-xs sm:max-w-sm lg:w-[233px] lg:h-[57px] text-base sm:text-lg transition-all duration-200 ${
               isRegistering || !isConnected
                 ? "opacity-50 cursor-not-allowed"
-                : ""
+                : "hover:opacity-90"
             }`}
             style={{
               background: "linear-gradient(90deg, #7565D9 0%, #4D0ACD 100%)",
