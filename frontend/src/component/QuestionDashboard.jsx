@@ -166,7 +166,7 @@ const QuestionDashboard = () => {
 
   if (!isRegistered) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center px-4">
         <div className="text-center">
           <div className="flex justify-center mb-4">
             <button
@@ -190,9 +190,10 @@ const QuestionDashboard = () => {
   }
 
   return (
-    <div className="">
-      <div className="max-w-7xl mx-auto space-y-8 pt-[87px] pl-[134px] pr-[134px]">
-        <div className="flex justify-between items-center">
+    <div className="min-h-screen">
+      <div className="max-w-7xl mx-auto space-y-6 md:space-y-8 pt-6 md:pt-[87px] px-4 md:px-8 lg:px-[134px]">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-4 sm:space-y-0">
           <button
             className="px-2.5 py-1.5 rounded-3xl"
             style={{
@@ -207,8 +208,8 @@ const QuestionDashboard = () => {
             </div>
           </button>
 
-          {/* Display teacher name */}
-          <div className="text-right">
+          {/* Teacher name display */}
+          <div className="text-left sm:text-right">
             <p className="text-sm text-gray-600">Welcome back,</p>
             <p className="font-sora font-semibold text-lg text-gray-800">
               {teacherName}
@@ -216,53 +217,58 @@ const QuestionDashboard = () => {
           </div>
         </div>
 
+        {/* Title section */}
         <div className="space-y-4">
-          <h1 className="text-4xl font-sora font-normal">
+          <h1 className="text-2xl md:text-4xl font-sora font-normal">
             Let's{" "}
-            <span className="font-sora text-4xl font-semibold">
+            <span className="font-sora text-2xl md:text-4xl font-semibold">
               Get Started{" "}
             </span>
           </h1>
-          <p className="text-xl text-[#00000080] font-sora">
+          <p className="text-lg md:text-xl text-[#00000080] font-sora">
             you'll have the ability to create and manage polls, ask questions,
-            and monitor <br />
-            your students' responses in real-time.
+            and monitor your students' responses in real-time.
           </p>
         </div>
 
-        <div className="max-w-4xl bg-white">
-          <div className="flex items-center justify-between mb-6">
-            <h1 className="text-2xl font-semibold text-gray-900">
+        {/* Main content */}
+        <div className="w-full bg-white">
+          {/* Question header */}
+          <div className="flex flex-wrap items-center justify-between mb-6 gap-4">
+            <h1 className="text-xl md:text-2xl font-semibold text-gray-900">
               Enter your question
             </h1>
-            <div className="flex items-center justify-center bg-gray-100 rounded-lg px-4 py-2.5 w-[170px] h-[43px]">
+            <div className="flex items-center justify-center bg-gray-100 rounded-lg px-4 py-2.5 w-full sm:w-[170px] h-[43px] sm:self-auto self-start">
               <span className="text-gray-700 font-medium mr-2">60 seconds</span>
               <img src={down} alt="down" className="w-4 h-4" />
             </div>
           </div>
 
+          {/* Question textarea */}
           <div className="relative mb-8">
             <textarea
               placeholder="Enter your question here..."
               value={question}
               onChange={(e) => setQuestion(e.target.value)}
-              className="w-full h-32 p-4 bg-gray-50 border border-gray-200 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 placeholder-gray-500"
+              className="w-full h-32 p-4 bg-gray-50 border border-gray-200 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 placeholder-gray-500 rounded-lg"
             />
             <div className="absolute bottom-4 right-4 text-sm text-gray-500">
               {question.length}/100
             </div>
           </div>
 
-          <div className="flex justify-between items-start mb-8">
-            <div className="flex-1 mr-8">
-              <h2 className="text-xl font-semibold text-gray-900 mb-4">
+          {/* Options and correct answer section */}
+          <div className="flex flex-col lg:flex-row justify-between items-start mb-8 space-y-8 lg:space-y-0 lg:space-x-8">
+            {/* Edit Options */}
+            <div className="flex-1 w-full lg:w-auto">
+              <h2 className="text-lg md:text-xl font-semibold text-gray-900 mb-4">
                 Edit Options
               </h2>
               <div className="space-y-3">
                 {options.map((option, index) => (
                   <div key={option.id} className="flex items-center space-x-3">
                     <div
-                      className="w-8 h-8 rounded-full flex items-center justify-center text-white font-semibold"
+                      className="w-8 h-8 rounded-full flex items-center justify-center text-white font-semibold flex-shrink-0"
                       style={{
                         background:
                           "linear-gradient(90deg, #7565D9 0%, #4D0ACD 100%)",
@@ -282,7 +288,7 @@ const QuestionDashboard = () => {
                     {options.length > 2 && (
                       <button
                         onClick={() => removeOption(option.id)}
-                        className="text-red-500 hover:text-red-700 font-semibold px-2"
+                        className="text-red-500 hover:text-red-700 font-semibold px-2 flex-shrink-0"
                       >
                         ×
                       </button>
@@ -300,15 +306,15 @@ const QuestionDashboard = () => {
             </div>
 
             {/* Is it Correct Section */}
-            <div className="flex-shrink-0">
-              <h2 className="text-xl font-semibold text-gray-900 mb-4">
+            <div className="w-full lg:w-auto lg:flex-shrink-0">
+              <h2 className="text-lg md:text-xl font-semibold text-gray-900 mb-4">
                 Is it Correct?
               </h2>
               <div className="space-y-3">
                 {options.map((option) => (
                   <div
                     key={option.id}
-                    className="flex items-center justify-center h-12"
+                    className="flex items-center justify-start lg:justify-center h-12"
                   >
                     <div className="flex items-center space-x-3">
                       <label className="flex items-center cursor-pointer">
@@ -363,11 +369,13 @@ const QuestionDashboard = () => {
         </div>
       </div>
 
-      <hr className="border-t-2 border-t-[#B6B6B6] mx-[134px]" />
+      {/* Divider */}
+      <hr className="border-t-2 border-t-[#B6B6B6] mx-4 md:mx-8 lg:mx-[134px]" />
 
-      <div className="flex justify-end mt-4 pr-[134px]">
+      {/* Submit button */}
+      <div className="flex justify-center md:justify-end mt-4 px-4 md:px-8 lg:pr-[134px] pb-6">
         <button
-          className="rounded-[34px] text-white font-sora px-14 py-4 w-[233px] h-[57px]"
+          className="rounded-[34px] text-white font-sora px-8 md:px-14 py-4 w-full sm:w-auto md:w-[233px] h-[57px]"
           onClick={handleCreatePoll}
           style={{
             background: "linear-gradient(90deg, #7565D9 0%, #4D0ACD 100%)",
