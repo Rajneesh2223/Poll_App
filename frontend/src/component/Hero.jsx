@@ -72,7 +72,7 @@ const Hero = () => {
           <button
             disabled={!role}
             onClick={() => {
-              sessionStorage.setItem("role", role);
+              sessionStorage.setItem("userRole", role);
               navigate(`/${role}`);
             }}
             className={`py-3 sm:py-4 lg:py-5 rounded-[34px] text-white font-sora px-8 sm:px-12 lg:px-16 w-full max-w-xs sm:max-w-sm lg:w-[233px] text-base sm:text-lg transition-all duration-200 ${

@@ -9,7 +9,8 @@ const Student = () => {
   const [isConnected, setIsConnected] = useState(false);
   const [isRegistering, setIsRegistering] = useState(false);
   const navigate = useNavigate();
-  const hasRegistered = useRef(false); // Prevent multiple registrations
+  const hasRegistered = useRef(false);
+  const userRole = sessionStorage.getItem("role") || "student";
 
   useEffect(() => {
     // Handle socket connection
@@ -21,7 +22,7 @@ const Student = () => {
     const handleDisconnect = () => {
       console.log("Socket disconnected");
       setIsConnected(false);
-      hasRegistered.current = false; // Reset on disconnect
+      hasRegistered.current = false;
     };
 
     const handleRegistrationSuccess = (data) => {
@@ -104,7 +105,7 @@ const Student = () => {
 
     socket.emit("register_user", {
       name: trimmedName,
-      role: "student",
+      role: userRole,
     });
 
     // Fallback timeout in case server doesn't respond
