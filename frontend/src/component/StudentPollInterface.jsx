@@ -15,17 +15,6 @@ const StudentPollInterface = () => {
   const [isActive, setIsActive] = useState(true);
   const [isRegistered, setIsRegistered] = useState(false);
   const [isSocketConnected, setIsSocketConnected] = useState(false);
-  console.log(
-    pollData,
-    isPollActive,
-    selectedOption,
-    hasVoted,
-    showResults,
-    timeLeft,
-    isActive,
-    isRegistered,
-    isSocketConnected
-  );
 
   const location = useLocation();
   const userName = location.state?.userName;
@@ -246,16 +235,6 @@ const StudentPollInterface = () => {
     0
   );
 
-  console.log(
-    "Socket connected:",
-    isSocketConnected,
-    "Registered:",
-    isRegistered,
-    "Poll active:",
-    isPollActive,
-    "Poll data:",
-    pollData
-  );
 
   if (!isSocketConnected || !isRegistered || (!isPollActive && !pollData)) {
     let statusMessage = "Connecting...";
@@ -329,78 +308,74 @@ const StudentPollInterface = () => {
         <div className="space-y-3 mb-6">
           {showResults
             ? optionsWithPercentages.map((option) => (
-                <div key={option.id} className="relative">
-                  <div className="flex items-center">
-                    <div className="flex-1 relative">
-                      <div className="flex items-center bg-gray-100 rounded-md h-10 relative overflow-hidden">
-                        <div
-                          className={`h-full rounded-md transition-all duration-500 ${getColorIntensity(
-                            option.percentage
-                          )}`}
-                          style={{ width: `${option.percentage}%` }}
-                        ></div>
-                        <div className="absolute left-3 flex items-center space-x-2 z-10">
-                          <div className="w-5 h-5 bg-white rounded-full flex items-center justify-center text-xs font-semibold text-gray-700">
-                            {option.id}
-                          </div>
-                          <span
-                            className={`text-sm font-medium ${
-                              option.percentage > 30
-                                ? "text-white"
-                                : "text-gray-700"
-                            }`}
-                          >
-                            {option.text}
-                          </span>
+              <div key={option.id} className="relative">
+                <div className="flex items-center">
+                  <div className="flex-1 relative">
+                    <div className="flex items-center bg-gray-100 rounded-md h-10 relative overflow-hidden">
+                      <div
+                        className={`h-full rounded-md transition-all duration-500 ${getColorIntensity(
+                          option.percentage
+                        )}`}
+                        style={{ width: `${option.percentage}%` }}
+                      ></div>
+                      <div className="absolute left-3 flex items-center space-x-2 z-10">
+                        <div className="w-5 h-5 bg-white rounded-full flex items-center justify-center text-xs font-semibold text-gray-700">
+                          {option.id}
                         </div>
-                      </div>
-                    </div>
-                    <div className="ml-3 min-w-16 text-right">
-                      <span className="text-sm font-semibold text-gray-700">
-                        {option.percentage}%
-                      </span>
-                      <div className="text-xs text-gray-500">
-                        {option.votes} votes
+                        <span
+                          className={`text-sm font-medium ${option.percentage > 30
+                            ? "text-white"
+                            : "text-gray-700"
+                            }`}
+                        >
+                          {option.text}
+                        </span>
                       </div>
                     </div>
                   </div>
-                </div>
-              ))
-            : pollData.options.map((option) => (
-                <div key={option.id} className="relative">
-                  <button
-                    onClick={() => handleOptionSelect(option.id)}
-                    disabled={timeLeft === 0 || hasVoted}
-                    className={`w-full flex items-center bg-gray-100 rounded-md h-10 relative overflow-hidden transition-all duration-200 ${
-                      selectedOption === option.id
-                        ? "ring-2 ring-purple-500 bg-purple-50"
-                        : "hover:bg-gray-200"
-                    } ${
-                      timeLeft === 0 || hasVoted
-                        ? "opacity-50 cursor-not-allowed"
-                        : "cursor-pointer"
-                    }`}
-                  >
-                    {selectedOption === option.id && (
-                      <div className="absolute inset-0 bg-purple-100 opacity-50"></div>
-                    )}
-                    <div className="absolute left-3 flex items-center space-x-2 z-10">
-                      <div
-                        className={`w-5 h-5 rounded-full flex items-center justify-center text-xs font-semibold ${
-                          selectedOption === option.id
-                            ? "bg-purple-500 text-white"
-                            : "bg-white text-gray-700"
-                        }`}
-                      >
-                        {option.id}
-                      </div>
-                      <span className="text-sm font-medium text-gray-700">
-                        {option.text}
-                      </span>
+                  <div className="ml-3 min-w-16 text-right">
+                    <span className="text-sm font-semibold text-gray-700">
+                      {option.percentage}%
+                    </span>
+                    <div className="text-xs text-gray-500">
+                      {option.votes} votes
                     </div>
-                  </button>
+                  </div>
                 </div>
-              ))}
+              </div>
+            ))
+            : pollData.options.map((option) => (
+              <div key={option.id} className="relative">
+                <button
+                  onClick={() => handleOptionSelect(option.id)}
+                  disabled={timeLeft === 0 || hasVoted}
+                  className={`w-full flex items-center bg-gray-100 rounded-md h-10 relative overflow-hidden transition-all duration-200 ${selectedOption === option.id
+                    ? "ring-2 ring-purple-500 bg-purple-50"
+                    : "hover:bg-gray-200"
+                    } ${timeLeft === 0 || hasVoted
+                      ? "opacity-50 cursor-not-allowed"
+                      : "cursor-pointer"
+                    }`}
+                >
+                  {selectedOption === option.id && (
+                    <div className="absolute inset-0 bg-purple-100 opacity-50"></div>
+                  )}
+                  <div className="absolute left-3 flex items-center space-x-2 z-10">
+                    <div
+                      className={`w-5 h-5 rounded-full flex items-center justify-center text-xs font-semibold ${selectedOption === option.id
+                        ? "bg-purple-500 text-white"
+                        : "bg-white text-gray-700"
+                        }`}
+                    >
+                      {option.id}
+                    </div>
+                    <span className="text-sm font-medium text-gray-700">
+                      {option.text}
+                    </span>
+                  </div>
+                </button>
+              </div>
+            ))}
         </div>
 
         {showResults ? (
@@ -428,11 +403,10 @@ const StudentPollInterface = () => {
               <button
                 onClick={handleSubmitVote}
                 disabled={!selectedOption || timeLeft === 0 || hasVoted}
-                className={`px-8 py-3 rounded-full font-medium transition-all duration-200 ${
-                  selectedOption && timeLeft > 0 && !hasVoted
-                    ? "bg-gradient-to-r from-purple-600 to-purple-800 hover:from-purple-700 hover:to-purple-900 text-white shadow-lg hover:shadow-xl"
-                    : "bg-gray-300 text-gray-500 cursor-not-allowed"
-                }`}
+                className={`px-8 py-3 rounded-full font-medium transition-all duration-200 ${selectedOption && timeLeft > 0 && !hasVoted
+                  ? "bg-gradient-to-r from-purple-600 to-purple-800 hover:from-purple-700 hover:to-purple-900 text-white shadow-lg hover:shadow-xl"
+                  : "bg-gray-300 text-gray-500 cursor-not-allowed"
+                  }`}
               >
                 Submit Answer
               </button>

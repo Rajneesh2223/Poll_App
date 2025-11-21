@@ -21,7 +21,7 @@ const QuestionDashboard = () => {
 
   useEffect(() => {
     const registrationStatus = sessionStorage.getItem("isRegistered");
-    const storedTeacherName = sessionStorage.getItem("teacherName");
+    const storedTeacherName = sessionStorage.getItem("userName");
     const userRole = sessionStorage.getItem("userRole");
 
     console.log("Checking registration status:", {
@@ -306,11 +306,10 @@ const QuestionDashboard = () => {
                           className="sr-only"
                         />
                         <div
-                          className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
-                            option.isCorrect
+                          className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${option.isCorrect
                               ? "border-purple-600 bg-purple-600"
                               : "border-gray-300 bg-white"
-                          }`}
+                            }`}
                         >
                           {option.isCorrect && (
                             <div className="w-2 h-2 rounded-full bg-white"></div>
@@ -328,11 +327,10 @@ const QuestionDashboard = () => {
                           className="sr-only"
                         />
                         <div
-                          className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
-                            !option.isCorrect
+                          className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${!option.isCorrect
                               ? "border-purple-600 bg-purple-600"
                               : "border-gray-300 bg-white"
-                          }`}
+                            }`}
                         >
                           {!option.isCorrect && (
                             <div className="w-2 h-2 rounded-full bg-white"></div>
