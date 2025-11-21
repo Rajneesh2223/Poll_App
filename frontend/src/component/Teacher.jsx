@@ -28,7 +28,7 @@ const Teacher = () => {
       setIsRegistering(false);
       hasRegistered.current = true;
 
-      sessionStorage.setItem("teacherName", data.name);
+      sessionStorage.setItem("userName", data.name);
       sessionStorage.setItem("userRole", data.role);
       sessionStorage.setItem("isRegistered", "true");
 
@@ -45,7 +45,7 @@ const Teacher = () => {
       setIsRegistering(false);
       hasRegistered.current = false;
 
-      sessionStorage.removeItem("teacherName");
+      sessionStorage.removeItem("userName");
       sessionStorage.removeItem("userRole");
       sessionStorage.removeItem("isRegistered");
     };
@@ -163,11 +163,10 @@ const Teacher = () => {
 
         <div className="flex justify-center items-center px-4">
           <button
-            className={`rounded-[34px] text-white font-sora px-8 sm:px-12 lg:px-16 py-3 sm:py-4 w-full max-w-xs sm:max-w-sm lg:w-[233px] lg:h-[57px] text-base sm:text-lg transition-all duration-200 ${
-              isRegistering || !isConnected
+            className={`rounded-[34px] text-white font-sora px-8 sm:px-12 lg:px-16 py-3 sm:py-4 w-full max-w-xs sm:max-w-sm lg:w-[233px] lg:h-[57px] text-base sm:text-lg transition-all duration-200 ${isRegistering || !isConnected
                 ? "opacity-50 cursor-not-allowed"
                 : "hover:opacity-90"
-            }`}
+              }`}
             style={{
               background: "linear-gradient(90deg, #7565D9 0%, #4D0ACD 100%)",
             }}
