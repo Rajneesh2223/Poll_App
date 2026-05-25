@@ -31,15 +31,7 @@ const allowedOrigins = [
 
 const io = new Server(httpServer, {
   cors: {
-    origin: (origin, callback) => {
-      if (!origin) return callback(null, true);
-
-      if (allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        callback("Not allowed by CORS");
-      }
-    },
+    origin: allowedOrigins,
     credentials: true,
   },
 });
@@ -49,14 +41,7 @@ handlePollSocket(io);
 app.use(cookieParser());
 app.use(
   cors({
-    origin: (origin, callback) => {
-      if (!origin) return callback(null, true);
-      if (allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        callback(new Error("Not allowed by CORS"));
-      }
-    },
+    origin: allowedOrigins,
     credentials: true,
   }),
 );
