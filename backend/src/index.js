@@ -21,7 +21,13 @@ const httpServer = createServer(app);
 
 app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 
-const allowedOrigins = [`http://localhost:${PORT}`, CLIENT_URL];
+const allowedOrigins = [
+  `http://localhost:${PORT}`,
+  CLIENT_URL,
+  "https://poll-app-psi-gules.vercel.app",
+  "http://localhost:5173",
+  "http://localhost:5174"
+];
 
 const io = new Server(httpServer, {
   cors: {
@@ -43,7 +49,14 @@ handlePollSocket(io);
 app.use(cookieParser());
 app.use(
   cors({
-    origin: CLIENT_URL,
+    origin: (origin, callback) => {
+      if (!origin) return callback(null, true);
+      if (allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
     credentials: true,
   }),
 );
