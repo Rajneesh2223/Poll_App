@@ -14,8 +14,9 @@ export const makeChartDataObjFromPollData = (poll) => {
           {
             label: "Votes",
             data: poll?.data?.pollData?.options.map(option => option.voteCount),
-            backgroundColor: ["#3B82F6", "#EF4444", "#10B981", "#F59E0B"],
+            backgroundColor: ["#3B82F6", "#06B6D4", "#60A5FA", "#22D3EE", "#1D4ED8", "#0891B2"],
             borderWidth: 1,
+            borderRadius: 8,
           },
         ],
       };

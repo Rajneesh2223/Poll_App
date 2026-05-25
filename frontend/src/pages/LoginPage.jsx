@@ -39,14 +39,14 @@ const LoginPage = () => {
   }
 
   return (
-    <div className="flex justify-center items-center bg-gradient-to-br from-gray-900 via-purple-950 to-slate-950 min-h-screen p-4 relative overflow-hidden">
+    <div className="flex justify-center items-center bg-gradient-to-br from-slate-950 via-blue-950 to-slate-950 min-h-screen p-4 relative overflow-hidden">
       {/* Ambient background glows */}
-      <div className="absolute top-1/4 left-1/4 w-80 h-80 bg-purple-600/15 rounded-full blur-[100px] pointer-events-none animate-float-slow"></div>
-      <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-indigo-600/15 rounded-full blur-[100px] pointer-events-none animate-float-delayed"></div>
+      <div className="absolute top-1/4 left-1/4 w-80 h-80 bg-blue-600/10 rounded-full blur-[100px] pointer-events-none animate-float-slow"></div>
+      <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-cyan-600/10 rounded-full blur-[100px] pointer-events-none animate-float-delayed"></div>
 
       <div className="w-full max-w-md glass-panel p-8 rounded-3xl relative z-10 shadow-2xl">
         <h2 className="text-3xl font-bold text-center mb-2 tracking-tight">
-          Welcome <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400">Back</span>
+          Welcome <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-400">Back</span>
         </h2>
         <p className="text-gray-400 text-center text-sm mb-8">Sign in to continue to LivePoll</p>
         
@@ -93,7 +93,7 @@ const LoginPage = () => {
  
           {/* Forgot Password Link */}
           <div className="text-right">
-            <a href="#" className="text-xs text-purple-400 hover:text-purple-300 hover:underline">Forgot password?</a>
+            <a href="#" className="text-xs text-cyan-400 hover:text-cyan-300 hover:underline">Forgot password?</a>
           </div>
  
           {/* Submit Button */}
@@ -114,7 +114,7 @@ const LoginPage = () => {
         {/* Sign Up Link */}
         <p className="text-center text-gray-400 text-sm">
           Don’t have an account?{' '}
-          <Link to="/register" className="text-purple-400 hover:text-purple-300 font-medium hover:underline">Sign up</Link>
+          <Link to="/register" className="text-cyan-400 hover:text-cyan-300 font-medium hover:underline">Sign up</Link>
         </p>
       </div>
     </div>

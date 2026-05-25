@@ -121,62 +121,96 @@ function VotingPage() {
   const chartData = makeChartDataObjFromPollData(poll);
 
   return (
-    <div className="bg-base-200 min-h-screen p-6 text-white flex flex-col items-center">
-      <div className="w-full flex justify-between max-w-lg">
-        {/* Poll Creator Info */}
-        <div className="flex items-center justify-center gap-4 mb-6">
-          <img
-            src="https://via.placeholder.com/100"
-            alt={poll?.data?.creatorData?.username}
-            className="rounded-full h-7 md:h-10 w-7 md:w-10"
-          />
-          <h2 className="text-lg md:text-xl font-semibold">
-            {poll?.data?.creatorData?.username || "Unknown"}
-          </h2>
+    <div className="flex bg-gradient-to-br from-slate-950 via-blue-950 to-slate-950 min-h-screen flex-col items-center text-white p-4 md:p-6 relative overflow-hidden">
+      {/* Background glowing orbs */}
+      <div className="absolute top-1/4 left-1/4 w-80 h-80 bg-blue-600/5 rounded-full blur-[100px] pointer-events-none animate-float-slow"></div>
+      <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-cyan-600/5 rounded-full blur-[100px] pointer-events-none animate-float-delayed"></div>
+
+      <div className="w-full max-w-xl glass-panel p-6 md:p-8 rounded-3xl relative z-10 shadow-2xl mt-4 md:mt-8 flex flex-col items-center">
+        <div className="w-full flex justify-between items-center mb-6 pb-4 border-b border-blue-500/10">
+          {/* Poll Creator Info */}
+          <div className="flex items-center gap-3">
+            <img
+              src={`https://placehold.co/100?text=${poll?.data?.creatorData?.username?.[0] || "U"}`}
+              alt={poll?.data?.creatorData?.username}
+              className="rounded-full h-8 w-8 object-cover border border-cyan-400/30"
+            />
+            <div>
+              <span className="text-[10px] tracking-wider text-gray-400 block font-semibold">CREATED BY</span>
+              <h2 className="text-sm font-bold text-white leading-none">
+                {poll?.data?.creatorData?.username || "Unknown"}
+              </h2>
+            </div>
+          </div>
+
+          {/* BookMark Button */}
+          <button
+            className="btn btn-circle btn-sm glass-btn-secondary"
+            onClick={() => handleBookmark(pollId)}
+            title="Bookmark Poll"
+          >
+            <FaBookmark className="text-xs text-cyan-400" />
+          </button>
         </div>
 
-        {/* BookMark Button */}
-        <button
-          className="btn btn-circle btn-neutral"
-          onClick={() => handleBookmark(pollId)}
-        >
-          <FaBookmark />
-        </button>
-      </div>
+        {/* Poll Title */}
+        <h1 className="text-2xl md:text-3xl font-extrabold text-center tracking-tight text-white mb-2">
+          {poll?.data?.pollData?.title || "Loading.."}
+        </h1>
 
-      {/* Poll Title */}
-      <h1 className="text-xl md:text-3xl font-bold text-center">
-        {poll?.data?.pollData?.title || "Loading.."}
-      </h1>
+        {/* Poll Description */}
+        <p className="text-xs md:text-sm font-light text-gray-400 mb-8 text-center max-w-md leading-relaxed">
+          {poll?.data?.pollData?.description || "Loading.."}
+        </p>
 
-      {/* Poll Description */}
-      <p className="text-sm font-light md:text-base mb-6 text-center">
-        {poll?.data?.pollData?.description || "Loading.."}
-      </p>
+        {/* Voting Options */}
+        <div className="grid grid-cols-1 gap-3 w-full mb-8">
+          {poll?.data?.pollData?.options.map((option) => {
+            const isSelected = selectedOption === option._id;
+            return (
+              <div
+                onClick={() => handleOptionSelect(option._id)}
+                key={option._id}
+                className={`p-4 rounded-xl flex items-center justify-between cursor-pointer transition-all duration-300 border ${
+                  isSelected 
+                    ? "bg-gradient-to-r from-blue-600/30 to-cyan-500/30 border-cyan-400/80 shadow-lg shadow-cyan-500/10" 
+                    : "glass-input border-blue-500/10 hover:bg-blue-500/5 hover:border-blue-500/30"
+                }`}
+              >
+                <span className={`text-sm md:text-base font-semibold ${isSelected ? "text-cyan-300" : "text-white"}`}>
+                  {option.name}
+                </span>
+                {isSelected && (
+                  <span className="w-2.5 h-2.5 rounded-full bg-cyan-400 shadow-md shadow-cyan-400/50"></span>
+                )}
+              </div>
+            );
+          })}
+        </div>
 
-      {/* Voting Options */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full max-w-lg mb-6">
-        {poll?.data?.pollData?.options.map((option) => (
-          <div
-            onClick={() => handleOptionSelect(option._id)}
-            key={option._id}
-            className={`md:p-4 p-2 ${
-              selectedOption == option._id ? "bg-blue-500" : "bg-base-100"
-            } rounded-lg shadow-md flex items-center justify-center cursor-pointer ${
-              selectedOption == option._id ? "outline" : "hover:bg-base-300"
-            } transition`}
-          >
-            <span className="text-lg">{option.name}</span>
-          </div>
-        ))}
-      </div>
-
-      {/* Chart Visualization */}
-      <div className="w-full max-w-lg">
-        <Bar
-          data={makeChartDataObjFromPollData(poll)}
-          options={{ responsive: true, maintainAspectRatio: false }}
-        />
+        {/* Chart Visualization (Wrapped in premium glass sub-container) */}
+        <div className="w-full bg-slate-900/30 border border-blue-500/10 p-5 rounded-2xl h-64 mt-4 shadow-inner relative">
+          <Bar
+            data={makeChartDataObjFromPollData(poll)}
+            options={{ 
+              responsive: true, 
+              maintainAspectRatio: false,
+              plugins: {
+                legend: { display: false }
+              },
+              scales: {
+                x: {
+                  grid: { display: false },
+                  ticks: { color: "#94a3b8", font: { size: 10 } }
+                },
+                y: {
+                  grid: { color: "rgba(59, 130, 246, 0.05)" },
+                  ticks: { color: "#94a3b8", font: { size: 10 } }
+                }
+              }
+            }}
+          />
+        </div>
       </div>
     </div>
   );

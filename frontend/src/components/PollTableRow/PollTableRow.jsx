@@ -1,5 +1,5 @@
 import React from "react";
-import { FaTrashAlt } from "react-icons/fa";
+import { FaTrashAlt, FaEye } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import useDeletePoll from "../../hooks/useDeletePoll";
 
@@ -13,32 +13,32 @@ function PollTableRow({ poll, index, refetch }) {
 
   return (
     <>
-      <tr>
-        <th>{index + 1}</th>
-        <td className="text-white">{poll.title}</td>
-        <td className="text-gray-400 whitespace-normal break-words max-w-xs">
+      <tr className="hover:bg-blue-500/5 transition-colors">
+        <th className="text-gray-400 font-semibold">{index + 1}</th>
+        <td className="text-white font-medium">{poll.title}</td>
+        <td className="text-gray-300 text-xs md:text-sm whitespace-normal break-words max-w-xs">
           {poll.description}
         </td>
         <td>
           {poll.published ? (
-            <span className="badge badge-success text-white">Published</span>
+            <span className="badge bg-green-500/10 text-green-400 border border-green-500/30 text-xs px-2.5 py-1.5 font-semibold">Published</span>
           ) : (
-            <span className="badge badge-warning text-white">Unpublished</span>
+            <span className="badge bg-yellow-500/10 text-yellow-400 border border-yellow-500/30 text-xs px-2.5 py-1.5 font-semibold">Unpublished</span>
           )}
         </td>
-        <td>
-          <div className="flex md:flex-row flex-wrap flex-col gap-2">
+        <td className="text-right pr-6">
+          <div className="flex md:flex-row flex-wrap flex-col justify-end gap-2">
             <button
               onClick={handleViewOnClick}
-              className="btn btn-sm btn-primary flex items-center"
+              className="btn btn-xs md:btn-sm glass-btn-primary flex items-center justify-center gap-1 py-1.5 px-3 rounded-lg"
             >
-              <FaTrashAlt className="mr-1" /> View
+              <FaEye className="text-xs" /> View
             </button>
             <button
               onClick={handleDelete}
-              className="btn btn-sm btn-error flex items-center"
+              className="btn btn-xs md:btn-sm btn-error btn-outline flex items-center justify-center gap-1 py-1.5 px-3 rounded-lg hover:bg-red-500/10 border-red-500/30 text-red-400"
             >
-              <FaTrashAlt className="mr-1" /> Delete
+              <FaTrashAlt className="text-xs" /> Delete
             </button>
           </div>
         </td>
