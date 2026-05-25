@@ -13,12 +13,6 @@ function Home() {
       <div className="absolute bottom-1/3 right-1/4 w-96 h-96 bg-cyan-500/10 rounded-full blur-[130px] pointer-events-none animate-float-delayed"></div>
 
       <div className="max-w-6xl w-full flex flex-col items-center relative z-10 py-16">
-        {/* Dynamic Badge */}
-        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-blue-500/30 bg-blue-900/20 text-blue-300 text-xs font-semibold tracking-wide mb-8">
-          <span className="w-2 h-2 rounded-full bg-cyan-400 animate-ping"></span>
-          <span>Discover Real-Time Feedback Instantly</span>
-        </div>
-
         {/* Eye-catching premium typography header */}
         <h1 className="text-5xl md:text-7xl font-extrabold mb-6 text-center leading-tight tracking-tight text-white">
           Modern Real-Time <br className="hidden md:inline" />
