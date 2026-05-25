@@ -1,5 +1,5 @@
 import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
-import Hero from "./component/Hero";
+import LandingPage from "./component/LandingPage";
 import Navbar from "./component/Navbar";
 import QuestionDashboard from "./component/QuestionDashboard";
 import Student from "./component/Student";
@@ -12,17 +12,28 @@ import TeacherPollResults from "./component/TeacherPollResults";
 const App = () => {
   return (
     <Router>
-      <Navbar />
       <Routes>
-        <Route path="/" element={<Hero />} />
-        <Route path="/student" element={<Student />} />
-        <Route path="/poll" element={<StudentQuestion />} />
-        <Route path="/teacher" element={<Teacher />} />
-        <Route path="/teacher-dashboard" element={<QuestionDashboard />} />
-        <Route path="/results" element={<TeacherPollResults />} />
-        <Route path="/question" element={<StudentPollInterface />} />
+        {/* Landing page has its own full-screen layout — no shared Navbar */}
+        <Route path="/" element={<LandingPage />} />
 
-        <Route path="/poll-history" element={<TeacherPollHistory />} />
+        {/* Inner app pages use the shared Navbar */}
+        <Route
+          path="/*"
+          element={
+            <>
+              <Navbar />
+              <Routes>
+                <Route path="/student" element={<Student />} />
+                <Route path="/poll" element={<StudentQuestion />} />
+                <Route path="/teacher" element={<Teacher />} />
+                <Route path="/teacher-dashboard" element={<QuestionDashboard />} />
+                <Route path="/results" element={<TeacherPollResults />} />
+                <Route path="/question" element={<StudentPollInterface />} />
+                <Route path="/poll-history" element={<TeacherPollHistory />} />
+              </Routes>
+            </>
+          }
+        />
       </Routes>
     </Router>
   );

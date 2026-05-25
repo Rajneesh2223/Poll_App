@@ -23,6 +23,9 @@ const Navbar = () => {
             >
               <div className="flex items-center space-x-2">
                 <img src={staricon} alt="star icon" className="w-6 h-6" />
+                <span className="font-sora font-semibold text-white text-base">
+                  Poll<span style={{ color: "#C4B5FD" }}>Sync</span>
+                </span>
               </div>
             </button>
           </div>
