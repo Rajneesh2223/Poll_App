@@ -1,253 +1,168 @@
-# 🗳️ ClassPulse - Real-Time Polling App
+<div align="center">
+    <img height="100px" src="./images/imageGIF.gif"/>
+    <h1>LivePoll - Live Polling Platform</h1>
+</div>
 
-A real-time polling web application where teachers can create polls, students can vote, and both can chat live. Built with **React (Vite)**, **Node.js**, **Express**, **MongoDB**, and **Socket.IO**.
+LivePoll is an interactive web application designed to simplify the process of creating, participating in, and managing polls. It combines user-friendly features with real-time updates to deliver a seamless polling experience📊.
 
----
+## Features
 
-## 🚀 Features
+- User can signup and login using his credentials, used cookie based authentication with jwt.
+- User can browse all the Polls created by other users in a pagination format and click on view to view the poll.
+- In poll view page user can vote on the poll and see the result of the poll live with chart using sockt.io.
+- User can bookmark the poll and see the bookmarked poll in bookmark page.
+- In user dashboard user can see the their details and manage their poll.
+- By clicking on the create poll button user can create a new poll and add options to the poll.
+- Used react-toastify for showing the error and success message.
+- Used chart.js and scocket.io-client for showing the poll result live in chart in poll view page.
+- Used daisyui and tailwind for styling the UI of the application for responsive design.
 
-### 👩‍🏫 Teacher
-- Register with a name and role = "Teacher"
-- Create polls with a timer and up to 6 options
-- See real-time results while students vote
-- View full **poll history**
-- Chat with students
-- Kick any student from the poll room
+## Links
 
-### 🧑‍🎓 Student
-- Register with a name and role = "Student"
-- Participate in live polls
-- Vote only once per poll
-- View poll results after voting
-- Chat with teachers and other students
+- [Live Website](https://livepoll.manikmaity.com/) - Loading time may take few seconds initially (free tier).
+- [Backend Routes Doc](https://livepoll-backend.manikmaity.com/docs/)
 
----
+## Preview Images
 
-## 🧱 Tech Stack
+### Home Page
 
-| Layer       | Technology             |
-|-------------|------------------------|
-| Frontend    | React (Vite)           |
-| Backend     | Node.js + Express.js   |
-| Real-time   | Socket.IO              |
-| Database    | MongoDB (Mongoose)     |
-| Deployment  | Render/Vercel          |
+<img src="./images/Home.png"/>
 
----
+### Polls Page
 
-## 📁 Folder Structure
+<img src="./images/pollsPage.png"/>
 
-```
-ClassPulse/
-├── frontend/          # React Vite frontend
-│   ├── src/
-│   │   ├── component/ # React components
-│   │   ├── utils/     # Socket.IO client
-│   │   └── App.jsx    # Main app component
-│   ├── .env           # Frontend environment variables
-│   └── package.json
-│
-└── backend/           # Node.js + Express + Socket.IO backend
-    ├── config/        # Database configuration
-    ├── controller/    # Business logic
-    ├── middleware/    # Error handling, validation
-    ├── models/        # MongoDB schemas
-    ├── routes/        # API routes
-    ├── .env           # Backend environment variables
-    ├── server.js      # Main server file
-    └── socket.js      # Socket.IO event handlers
-```
+### Login Page
 
----
+<img src="./images/Screenshot 2024-11-14 101710.png"/>
 
-## 🛠️ Installation & Setup
+### Signup Page
+
+<img src="./images/signup.png"/>
+
+### Poll Votting Page
+
+<img src="./images/votingPage.png"/>
+
+### Dashboard Page
+
+<img src="./images/dashboard.png"/>
+
+### Create Poll Page
+
+<img src="./images/createPollPage.png"/>
+
+### Bookmarks Page
+
+<img src="./images/bookmark.png"/>
+
+## Tech Stack
+
+### Frontend
+
+Framework & Routing: `ReactJS`, `React Router`  
+State Management: `Zustand`, `React Query`  
+Real-Time & Charts: `Socket.io-client`, `react-chartjs-2`  
+Styling: `TailwindCSS`, `DaisyUI`  
+Notifications & Icons: `React-Toastify`, `React Icons`
+
+### Backend
+
+Framework & Authentication: `Node.js`, `Express.js`, `JWT`, `bcrypt`  
+Validation & Documentation: `Zod`, `Swagger-jsdoc`  
+Real-Time Communication: `Socket.io`  
+Database & ORM: `Mongoose`
+
+### Others
+
+API Communication: `Axios`
+
+## Installation and Setup
 
 ### Prerequisites
-- Node.js (v16 or higher)
-- MongoDB Atlas account or local MongoDB instance
-- Git
 
-### 1️⃣ Clone the Repository
+- Node.js and npm/yarn installed.
+- MongoDB database set up locally or on a cloud provider.
 
-```bash
-git clone https://github.com/Rajneesh2223/Poll_App.git
-cd Poll_App
-```
+### Steps
 
----
+1. Clone the Repository
 
-### 2️⃣ Backend Setup
+   ```bash
+   git clone https://github.com/ManikMaity/LivePoll.git
+   cd LivePoll
+   ```
 
-```bash
-cd backend
-npm install
-```
+2. Backend Setup
+   - Navigate to the backend directory:
+     ```bash
+     cd backend
+     ```
+   - Install dependencies:
+     ```bash
+     npm install
+     ```
+   - Create a `.env` file and add the following:
+     `env
+PORT=3000
+DB_CONNECTION="your mongodb url" 
+SALT_ROUNDS=6
+JWT_PRIVATE="your jwt private key"
+CLIENT_URL="your client url"
+ `
+   - Start the server:
+     ```bash
+     npm run dev
+     ```
 
-#### Configure Environment Variables
+3. Frontend Setup
+   - Navigate to the frontend directory:
+     ```bash
+     cd frontend
+     ```
+   - Install dependencies:
+     ```bash
+     npm install
+     ```
+   - Update `.env` file with the backend URL (e.g., `http://localhost:3000`).
+   - Start the development server:
+     ```bash
+     npm start
+     ```
 
-Create a `.env` file in the `/backend` directory:
-
-```bash
-# Server Configuration
-PORT=4000
-NODE_ENV=development
-
-# Database Configuration
-MONGO_DB_URL=your_mongodb_connection_string
-
-# CORS Configuration (comma-separated)
-ALLOWED_ORIGINS=http://localhost:5173,http://localhost:3000
-```
-
-> **Note**: Replace `your_mongodb_connection_string` with your actual MongoDB connection string from MongoDB Atlas.
-
-#### Start the Backend Server
-
-```bash
-# Development mode (with auto-restart)
-npm run dev
-
-# Production mode
-npm start
-```
-
-The server will run on `http://localhost:4000`
-
----
-
-### 3️⃣ Frontend Setup
-
-```bash
-cd ../frontend
-npm install
-```
-
-#### Configure Environment Variables
-
-Create a `.env` file in the `/frontend` directory:
-
-```bash
-# Development
-VITE_API_URL=http://localhost:4000
-
-# Production (update with your deployed backend URL)
-# VITE_API_URL=https://your-backend-url.com
-```
-
-#### Start the Development Server
-
-```bash
-npm run dev
-```
-
-The frontend will run on `http://localhost:5173`
+4. Access the Application
+   - Open a browser and go to `http://localhost:5173`.
 
 ---
 
-## 🌐 Deployment
+### To Switch Between Local and Deployed Environments
 
-### Backend (Render)
-
-1. Create a new Web Service on [Render](https://render.com)
-2. Connect your GitHub repository
-3. Set the following:
-   - **Build Command**: `cd backend && npm install`
-   - **Start Command**: `cd backend && npm start`
-4. Add environment variables in Render dashboard:
-   - `MONGO_DB_URL`
-   - `PORT` (optional, Render provides this)
-   - `ALLOWED_ORIGINS` (include your frontend URL)
-   - `NODE_ENV=production`
-
-### Frontend (Vercel)
-
-1. Create a new project on [Vercel](https://vercel.com)
-2. Connect your GitHub repository
-3. Set root directory to `frontend`
-4. Add environment variable:
-   - `VITE_API_URL` = your deployed backend URL
-5. Deploy
+- Update backend `.env` with:
+  ```env
+  BACKEND_URL=http://localhost:3000
+  ```
+- Update frontend Axios base URL to:
+  ```javascript
+  axios.defaults.baseURL = "http://localhost:3000/api/v1";
+  ```
+- Update the Socket.io URL in the voting page:
+  ```javascript
+  const socket = io("http://localhost:3000");
+  ```
 
 ---
 
-## 📡 API Documentation
+## Usage
 
-### REST Endpoints
+- Navigate to the `frontend` directory and run `npm run dev` to start the development server.
+- Navigate to the `backend` directory and run `npm run dev` to start the server.
+- Open a browser and go to `http://localhost:5173` to access the application.
 
-#### Health Check
-```
-GET /health
-```
-Returns server and database status.
+## Future Improvements
 
-#### Get Poll History
-```
-GET /api/poll-history
-```
-Returns all polls sorted by creation date (newest first).
-
-### Socket.IO Events
-
-See [API.md](./API.md) for complete Socket.IO event documentation.
-
----
-
-## 🐛 Troubleshooting
-
-### Backend won't start
-- Ensure MongoDB connection string is correct in `.env`
-- Check if port 4000 is already in use
-- Verify all environment variables are set
-
-### Frontend can't connect to backend
-- Verify `VITE_API_URL` in frontend `.env` matches backend URL
-- Check CORS configuration in backend
-- Ensure backend server is running
-
-### Socket connection issues
-- Check browser console for connection errors
-- Verify firewall isn't blocking WebSocket connections
-- Ensure backend CORS allows your frontend origin
-
-### Database connection failed
-- Verify MongoDB Atlas IP whitelist includes your IP (or use 0.0.0.0/0 for development)
-- Check MongoDB connection string format
-- Ensure database user has proper permissions
-
----
-
-## 🔒 Security Notes
-
-- Never commit `.env` files to version control
-- Use strong MongoDB passwords
-- In production, restrict CORS to specific origins
-- Implement rate limiting for production deployments
-- Use HTTPS in production
-
----
-
-## 📝 License
-
-ISC
-
----
-
-## 👨‍💻 Author
-
-Rajneesh Kumar
-
----
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
----
-
-## 📞 Support
-
-For issues and questions, please open an issue on GitHub.
+- Add a search feature to the poll page.
+- Add like feature to the poll.
+- sorting polls using created date and popularity.
+- Updated user.
+- User avatar.
+- Multiple question poll.
