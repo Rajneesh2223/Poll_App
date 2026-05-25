@@ -39,54 +39,59 @@ function Register() {
   }
 
   return (
-    <div className=" flex justify-center h-screen bg-base-200 p-4">
-      <div className="w-full max-w-md  rounded-lg ">
-        <h2 className="text-2xl font-semibold text-center text-white mb-6">
-          Sign Up
-        </h2>
+    <div className="flex justify-center items-center bg-gradient-to-br from-gray-900 via-purple-950 to-slate-950 min-h-screen p-4 relative overflow-hidden">
+      {/* Ambient background glows */}
+      <div className="absolute top-1/4 left-1/4 w-80 h-80 bg-purple-600/15 rounded-full blur-[100px] pointer-events-none animate-float-slow"></div>
+      <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-indigo-600/15 rounded-full blur-[100px] pointer-events-none animate-float-delayed"></div>
 
-        <form className="space-y-4">
+      <div className="w-full max-w-md glass-panel p-8 rounded-3xl relative z-10 shadow-2xl">
+        <h2 className="text-3xl font-bold text-center mb-2 tracking-tight">
+          Create <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400">Account</span>
+        </h2>
+        <p className="text-gray-400 text-center text-sm mb-8">Join LivePoll to start hosting live polls</p>
+
+        <form className="space-y-5">
           {/* Username Input */}
           <div className="form-control w-full">
-            <label className="label">
-              <span className="label-text text-gray-200">Username</span>
+            <label className="label py-1">
+              <span className="label-text text-gray-300 font-medium text-xs">USERNAME</span>
             </label>
             <input
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               type="text"
-              placeholder="Enter your username"
-              className="input input-bordered w-full bg-gray-700 text-white focus:outline-none focus:ring focus:ring-primary"
+              placeholder="johndoe"
+              className="input input-bordered w-full glass-input text-white text-sm"
               required
             />
           </div>
 
           {/* Email Input */}
           <div className="form-control w-full">
-            <label className="label">
-              <span className="label-text text-gray-200">Email</span>
+            <label className="label py-1">
+              <span className="label-text text-gray-300 font-medium text-xs">EMAIL ADDRESS</span>
             </label>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="Enter your email"
-              className="input input-bordered w-full bg-gray-700 text-white focus:outline-none focus:ring focus:ring-primary"
+              placeholder="name@example.com"
+              className="input input-bordered w-full glass-input text-white text-sm"
               required
             />
           </div>
 
           {/* Password Input */}
           <div className="form-control w-full">
-            <label className="label">
-              <span className="label-text text-gray-200">Password</span>
+            <label className="label py-1">
+              <span className="label-text text-gray-300 font-medium text-xs">PASSWORD</span>
             </label>
             <input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="Enter your password"
-              className="input input-bordered w-full bg-gray-700 text-white focus:outline-none focus:ring focus:ring-primary"
+              placeholder="••••••••"
+              className="input input-bordered w-full glass-input text-white text-sm"
               required
             />
           </div>
@@ -94,17 +99,17 @@ function Register() {
           {/* Error Message and Success Message */}
           {mutation.isError && <InlineTextError mutation={mutation} />}
           {mutation.isSuccess && (
-            <p className="text-green-500 text-sm md:text-base">
-              🎉 {mutation.data.message || "Process is successfull"}
+            <p className="text-green-400 text-sm font-medium">
+              🎉 {mutation.data.message || "Process is successful"}
             </p>
           )}
 
           {/* Submit Button */}
-          <div>
+          <div className="pt-2">
             <button
               onClick={handleSignup}
               type="submit"
-              className="btn btn-primary w-full text-white mt-4"
+              className="btn glass-btn-primary w-full text-white rounded-xl shadow-lg"
             >
               {mutation.isLoading ? <SpinnerLoader /> : "Sign Up"}
             </button>
@@ -112,12 +117,12 @@ function Register() {
         </form>
 
         {/* Divider */}
-        <div className="divider text-gray-400">OR</div>
+        <div className="divider text-gray-500 my-6 text-xs font-semibold">OR CONTINUE WITH</div>
 
         {/* Login Link */}
-        <p className="text-center text-gray-300">
+        <p className="text-center text-gray-400 text-sm">
           Already have an account?{" "}
-          <Link to="/login" className="text-primary hover:underline">
+          <Link to="/login" className="text-purple-400 hover:text-purple-300 font-medium hover:underline">
             Login
           </Link>
         </p>

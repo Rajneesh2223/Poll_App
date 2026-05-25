@@ -39,77 +39,82 @@ const LoginPage = () => {
   }
 
   return (
-    <div className="flex justify-center bg-base-200 h-screen  p-4">
-      <div className="w-full max-w-md  rounded-lg  p-8">
-        <h2 className="text-2xl font-semibold text-center text-white mb-6">Login</h2>
+    <div className="flex justify-center items-center bg-gradient-to-br from-gray-900 via-purple-950 to-slate-950 min-h-screen p-4 relative overflow-hidden">
+      {/* Ambient background glows */}
+      <div className="absolute top-1/4 left-1/4 w-80 h-80 bg-purple-600/15 rounded-full blur-[100px] pointer-events-none animate-float-slow"></div>
+      <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-indigo-600/15 rounded-full blur-[100px] pointer-events-none animate-float-delayed"></div>
+
+      <div className="w-full max-w-md glass-panel p-8 rounded-3xl relative z-10 shadow-2xl">
+        <h2 className="text-3xl font-bold text-center mb-2 tracking-tight">
+          Welcome <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400">Back</span>
+        </h2>
+        <p className="text-gray-400 text-center text-sm mb-8">Sign in to continue to LivePoll</p>
         
-        <form className="space-y-4">
+        <form className="space-y-5">
           {/* Email Input */}
           <div className="form-control w-full">
-            <label className="label">
-              <span className="label-text text-gray-200">Email</span>
+            <label className="label py-1">
+              <span className="label-text text-gray-300 font-medium text-xs">EMAIL ADDRESS</span>
             </label>
             <input 
               type="email" 
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="Enter your email" 
-              className="input input-bordered w-full bg-gray-700 text-white focus:outline-none focus:ring focus:ring-primary" 
+              placeholder="name@example.com" 
+              className="input input-bordered w-full glass-input text-white text-sm" 
               required 
             />
           </div>
-
+ 
           {/* Password Input */}
           <div className="form-control w-full">
-            <label className="label">
-              <span className="label-text text-gray-200">Password</span>
+            <label className="label py-1">
+              <span className="label-text text-gray-300 font-medium text-xs">PASSWORD</span>
             </label>
             <input 
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)} 
-              placeholder="Enter your password" 
-              className="input input-bordered w-full bg-gray-700 text-white focus:outline-none focus:ring focus:ring-primary" 
+              placeholder="••••••••" 
+              className="input input-bordered w-full glass-input text-white text-sm" 
               required 
             />
           </div>
-
+ 
            {/* Error Message */}
            {mutation.isError && <InlineTextError mutation={mutation} />}
-
+ 
           {/* Success Message */}
           {mutation.isSuccess && (
-            <p className="text-green-500 text-sm md:text-base">
-              🎉 {mutation.data.message || "Login is successfull"}
+            <p className="text-green-400 text-sm font-medium">
+              🎉 {mutation.data.message || "Login is successful"}
             </p>
           )}
-
+ 
           {/* Forgot Password Link */}
           <div className="text-right">
-            <a href="#" className="text-sm text-primary hover:underline">Forgot password?</a>
+            <a href="#" className="text-xs text-purple-400 hover:text-purple-300 hover:underline">Forgot password?</a>
           </div>
-
-         
-
+ 
           {/* Submit Button */}
-          <div>
+          <div className="pt-2">
             <button 
               onClick={handleLogin}
               type="submit" 
-              className="btn btn-primary w-full text-white"
+              className="btn glass-btn-primary w-full text-white rounded-xl shadow-lg"
             >
-              {mutation.isLoading ? <SpinnerLoader/> : "Login"}
+              {mutation.isLoading ? <SpinnerLoader/> : "Sign In"}
             </button>
           </div>
         </form>
-
+ 
         {/* Divider */}
-        <div className="divider text-gray-400">OR</div>
-
+        <div className="divider text-gray-500 my-6 text-xs font-semibold">OR CONTINUE WITH</div>
+ 
         {/* Sign Up Link */}
-        <p className="text-center text-gray-300">
+        <p className="text-center text-gray-400 text-sm">
           Don’t have an account?{' '}
-          <Link to="/register" href="#" className="text-primary hover:underline">Sign up</Link>
+          <Link to="/register" className="text-purple-400 hover:text-purple-300 font-medium hover:underline">Sign up</Link>
         </p>
       </div>
     </div>
