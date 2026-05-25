@@ -12,7 +12,7 @@ const CommonLogo = () => {
           <div className="flex items-center space-x-2">
             <img src={staricon} alt="star icon" className="w-6 h-6" />
             <h1 className="font-sora font-semibold text-white text-lg">
-              Intervue Poll
+              ClassPulse
             </h1>
           </div>
         </button>

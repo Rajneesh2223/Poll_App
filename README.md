@@ -1,4 +1,4 @@
-# 🗳️ Real-Time Polling App
+# 🗳️ ClassPulse - Real-Time Polling App
 
 A real-time polling web application where teachers can create polls, students can vote, and both can chat live. Built with **React (Vite)**, **Node.js**, **Express**, **MongoDB**, and **Socket.IO**.
 
@@ -38,7 +38,7 @@ A real-time polling web application where teachers can create polls, students ca
 ## 📁 Folder Structure
 
 ```
-Poll_App/
+ClassPulse/
 ├── frontend/          # React Vite frontend
 │   ├── src/
 │   │   ├── component/ # React components
