@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { LogIn, Shield, Wifi, WifiOff } from "lucide-react";
 import { socket } from "../utils/socket";
 import CommonLogo from "./CommonLogo";
 
@@ -12,170 +13,131 @@ const Teacher = () => {
   const hasRegistered = useRef(false);
 
   useEffect(() => {
-    const handleConnect = () => {
-      console.log("Socket connected:", socket.id);
-      setIsConnected(true);
-    };
-
-    const handleDisconnect = () => {
-      console.log("Socket disconnected");
+    const onConnect = () => setIsConnected(true);
+    const onDisconnect = () => {
       setIsConnected(false);
       hasRegistered.current = false;
     };
-
-    const handleRegistrationSuccess = (data) => {
-      console.log("Teacher registration successful:", data);
+    const onSuccess = (data) => {
       setIsRegistering(false);
       hasRegistered.current = true;
-
       sessionStorage.setItem("userName", data.name);
       sessionStorage.setItem("userRole", data.role);
       sessionStorage.setItem("isRegistered", "true");
-
       navigate("/teacher-dashboard");
     };
-
-    const handleRegistrationError = (error) => {
-      console.error("Teacher registration failed:", error);
-      setError(
-        typeof error === "string"
-          ? error
-          : "Registration failed. Please try again."
-      );
+    const onError = (err) => {
+      setError(typeof err === "string" ? err : "Registration failed. Please try again.");
       setIsRegistering(false);
       hasRegistered.current = false;
-
-      sessionStorage.removeItem("userName");
-      sessionStorage.removeItem("userRole");
-      sessionStorage.removeItem("isRegistered");
     };
 
-    if (socket.connected) {
-      setIsConnected(true);
-    }
-
-    socket.on("connect", handleConnect);
-    socket.on("disconnect", handleDisconnect);
-    socket.on("registration_success", handleRegistrationSuccess);
-    socket.on("registration_error", handleRegistrationError);
+    if (socket.connected) setIsConnected(true);
+    socket.on("connect", onConnect);
+    socket.on("disconnect", onDisconnect);
+    socket.on("registration_success", onSuccess);
+    socket.on("registration_error", onError);
 
     return () => {
-      socket.off("connect", handleConnect);
-      socket.off("disconnect", handleDisconnect);
-      socket.off("registration_success", handleRegistrationSuccess);
-      socket.off("registration_error", handleRegistrationError);
+      socket.off("connect", onConnect);
+      socket.off("disconnect", onDisconnect);
+      socket.off("registration_success", onSuccess);
+      socket.off("registration_error", onError);
     };
   }, [navigate]);
 
-  const handleContinue = () => {
-    if (!teacherName.trim()) {
-      setError("Please enter your name to continue.");
-      return;
-    }
-
-    if (!isConnected) {
-      setError("Connection lost. Please refresh the page.");
-      return;
-    }
-
-    if (isRegistering || hasRegistered.current) {
-      console.log("Registration already in progress or completed");
-      return;
-    }
-
+  const handleSubmit = () => {
+    if (!teacherName.trim()) { setError("Please enter your name."); return; }
+    if (!isConnected) { setError("Not connected. Please refresh the page."); return; }
+    if (isRegistering || hasRegistered.current) return;
     setError("");
     setIsRegistering(true);
-
-    const trimmedName = teacherName.trim();
-    console.log("Registering teacher:", trimmedName);
-
-    socket.emit("register_user", {
-      name: trimmedName,
-      role: "teacher",
-    });
-
+    socket.emit("register_user", { name: teacherName.trim(), role: "teacher" });
     setTimeout(() => {
-      if (isRegistering && !hasRegistered.current) {
-        setError("Registration timeout. Please try again.");
+      if (!hasRegistered.current) {
+        setError("Connection timeout. Please try again.");
         setIsRegistering(false);
       }
     }, 5000);
   };
 
-  const handleKeyPress = (e) => {
-    if (e.key === "Enter") {
-      handleContinue();
-    }
-  };
-
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8">
-      <div className="max-w-7xl w-full space-y-6 sm:space-y-8">
-        <CommonLogo />
-
-        <div className="text-center space-y-3 sm:space-y-4 px-2 sm:px-4">
-          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-sora font-normal">
-            Let's{" "}
-            <span className="font-sora text-2xl sm:text-3xl lg:text-4xl font-semibold">
-              Get Started{" "}
-            </span>
-          </h1>
-          <div className="max-w-4xl mx-auto">
-            <p className="text-base sm:text-lg lg:text-xl text-[#00000080] font-sora leading-relaxed px-2">
-              As a teacher, you'll have the ability to{" "}
-              <span className="font-sora font-semibold text-[#000000]">
-                create and manage polls
-              </span>
-              , ask questions, and monitor your students' responses in real-time
-            </p>
-          </div>
-        </div>
-
-        <div className="flex justify-center px-4">
-          <div className="flex flex-col space-y-2 w-full max-w-md sm:max-w-lg">
-            <label
-              htmlFor="name"
-              className="text-lg sm:text-xl font-normal font-sora text-gray-700"
-            >
-              Enter Your Name
-            </label>
-            <input
-              type="text"
-              id="name"
-              name="name"
-              value={teacherName}
-              onChange={(e) => setTeacherName(e.target.value)}
-              onKeyPress={handleKeyPress}
-              placeholder="Your name"
-              className="font-sora font-normal text-lg sm:text-xl px-4 sm:px-5 py-4 sm:py-5 border border-gray-300 rounded-xs focus:outline-none focus:ring-2 focus:ring-blue-500 bg-[#F2F2F2] w-full"
-              disabled={isRegistering}
-            />
-            {error && (
-              <span className="text-red-500 text-sm break-words">{error}</span>
-            )}
-            {!isConnected && (
-              <span className="text-orange-500 text-sm">
-                Connecting to server...
-              </span>
-            )}
-          </div>
-        </div>
-
-        <div className="flex justify-center items-center px-4">
-          <button
-            className={`rounded-[34px] text-white font-sora px-8 sm:px-12 lg:px-16 py-3 sm:py-4 w-full max-w-xs sm:max-w-sm lg:w-[233px] lg:h-[57px] text-base sm:text-lg transition-all duration-200 ${isRegistering || !isConnected
-                ? "opacity-50 cursor-not-allowed"
-                : "hover:opacity-90"
-              }`}
-            style={{
-              background: "linear-gradient(90deg, #7565D9 0%, #4D0ACD 100%)",
-            }}
-            onClick={handleContinue}
-            disabled={isRegistering || !isConnected}
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-purple-50 flex items-center justify-center px-4">
+      <div className="w-full max-w-md">
+        <div className="text-center mb-8">
+          <CommonLogo />
+          <div
+            className="mt-6 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg"
+            style={{ background: "linear-gradient(135deg, #7565D9, #4D0ACD)" }}
           >
-            {isRegistering ? "Registering..." : "Continue"}
+            <Shield className="w-8 h-8 text-white" />
+          </div>
+          <h1 className="text-2xl font-bold text-gray-900">Teacher Dashboard</h1>
+          <p className="text-gray-500 mt-1 text-sm">
+            Enter your name to access poll creation &amp; management
+          </p>
+        </div>
+
+        <div className="bg-white rounded-3xl shadow-xl p-8 border border-gray-100">
+          <div className="mb-2 flex items-center justify-between">
+            <label className="text-sm font-semibold text-gray-700">Your Name</label>
+            <div
+              className={`flex items-center space-x-1 text-xs font-medium ${
+                isConnected ? "text-green-500" : "text-orange-400"
+              }`}
+            >
+              {isConnected ? (
+                <Wifi className="w-3 h-3" />
+              ) : (
+                <WifiOff className="w-3 h-3" />
+              )}
+              <span>{isConnected ? "Connected" : "Connecting…"}</span>
+            </div>
+          </div>
+
+          <input
+            type="text"
+            value={teacherName}
+            onChange={(e) => { setTeacherName(e.target.value); setError(""); }}
+            onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
+            placeholder="e.g. Prof. Sharma"
+            disabled={isRegistering}
+            autoFocus
+            className="w-full px-4 py-3.5 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-purple-400 text-gray-900 placeholder-gray-400 text-sm transition-colors"
+          />
+
+          {error && (
+            <p className="mt-2 text-xs text-red-500 font-medium">{error}</p>
+          )}
+
+          <button
+            id="teacher-enter-btn"
+            onClick={handleSubmit}
+            disabled={isRegistering || !isConnected || !teacherName.trim()}
+            className={`w-full mt-5 flex items-center justify-center space-x-2 py-3.5 rounded-2xl font-bold text-white text-sm transition-all duration-200 ${
+              !isRegistering && isConnected && teacherName.trim()
+                ? "hover:scale-[1.02] hover:shadow-lg active:scale-[0.99]"
+                : "opacity-50 cursor-not-allowed"
+            }`}
+            style={{ background: "linear-gradient(135deg, #7565D9, #4D0ACD)" }}
+          >
+            {isRegistering ? (
+              <>
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                <span>Setting up…</span>
+              </>
+            ) : (
+              <>
+                <LogIn className="w-4 h-4" />
+                <span>Enter Dashboard</span>
+              </>
+            )}
           </button>
         </div>
+
+        <p className="text-center text-xs text-gray-400 mt-6">
+          You'll be able to create polls, monitor students, and view results.
+        </p>
       </div>
     </div>
   );

@@ -1,9 +1,15 @@
-import { useEffect, useState } from "react";
-import { useLocation } from "react-router-dom";
+import { useEffect, useRef, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import {
+  CheckCircle2,
+  Clock,
+  Send,
+  Users,
+  Zap,
+} from "lucide-react";
 import { socket } from "../utils/socket";
 import ChatButton from "./ChatButton";
 import ChatWindow from "./ChatWindow";
-import CommonLogo from "./CommonLogo";
 
 const StudentPollInterface = () => {
   const [pollData, setPollData] = useState(null);
@@ -12,256 +18,233 @@ const StudentPollInterface = () => {
   const [hasVoted, setHasVoted] = useState(false);
   const [showResults, setShowResults] = useState(false);
   const [timeLeft, setTimeLeft] = useState(60);
-  const [isActive, setIsActive] = useState(true);
+  const [isTimerActive, setIsTimerActive] = useState(false);
   const [isRegistered, setIsRegistered] = useState(false);
   const [isSocketConnected, setIsSocketConnected] = useState(false);
-
-  const location = useLocation();
-  const userName = location.state?.userName;
-
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [hasUnreadMessages, setHasUnreadMessages] = useState(false);
+  const [totalVoters, setTotalVoters] = useState(0);
 
-  const handleChatToggle = () => {
-    setIsChatOpen((prev) => !prev);
-    if (!isChatOpen) setHasUnreadMessages(false);
-  };
+  const location = useLocation();
+  const navigate = useNavigate();
+  const userName =
+    location.state?.userName || sessionStorage.getItem("userName");
 
+  // Redirect if no userName
   useEffect(() => {
-    const handleConnect = () => {
-      console.log("Socket connected");
-      setIsSocketConnected(true);
-    };
+    if (!userName) navigate("/student");
+  }, [userName, navigate]);
 
-    const handleDisconnect = () => {
-      console.log("Socket disconnected");
+  // ── Socket connection tracking ──────────────────────────────────────────────
+  useEffect(() => {
+    const onConnect = () => setIsSocketConnected(true);
+    const onDisconnect = () => {
       setIsSocketConnected(false);
       setIsRegistered(false);
     };
+    if (socket.connected) setIsSocketConnected(true);
+    socket.on("connect", onConnect);
+    socket.on("disconnect", onDisconnect);
+    return () => {
+      socket.off("connect", onConnect);
+      socket.off("disconnect", onDisconnect);
+    };
+  }, []);
 
-    const handleReconnect = () => {
-      console.log("Socket reconnected");
-      setIsSocketConnected(true);
+  // ── Registration ────────────────────────────────────────────────────────────
+  useEffect(() => {
+    if (!isSocketConnected || !userName) return;
 
-      if (userName) {
-        setIsRegistered(false);
+    const onSuccess = (data) => {
+      setIsRegistered(true);
+      sessionStorage.setItem("userName", data.name);
+      sessionStorage.setItem("userRole", data.role);
+      sessionStorage.setItem("isRegistered", "true");
+    };
+    const onError = () => {
+      // If already registered in this session, mark as registered
+      if (sessionStorage.getItem("isRegistered") === "true") {
+        setIsRegistered(true);
       }
     };
 
-    if (socket.connected) {
-      setIsSocketConnected(true);
-    }
+    socket.on("registration_success", onSuccess);
+    socket.on("registration_error", onError);
 
-    socket.on("connect", handleConnect);
-    socket.on("disconnect", handleDisconnect);
-    socket.on("reconnect", handleReconnect);
-
-    return () => {
-      socket.off("connect", handleConnect);
-      socket.off("disconnect", handleDisconnect);
-      socket.off("reconnect", handleReconnect);
-    };
-  }, [userName]);
-
-  useEffect(() => {
-    if (userName && !isRegistered && isSocketConnected) {
-      console.log("Registering user:", userName);
+    if (!isRegistered) {
       socket.emit("register_user", { name: userName, role: "student" });
     }
-    const handleRegistrationSuccess = (data) => {
-      console.log("Registration successful:", data);
-      setIsRegistered(true);
-    };
-
-    const handleRegistrationError = (error) => {
-      console.error("Registration failed:", error);
-      alert(`Registration failed: ${error}`);
-
-      setTimeout(() => {
-        if (isSocketConnected && userName) {
-          console.log("Retrying registration...");
-          socket.emit("register_user", { name: userName, role: "student" });
-        }
-      }, 2000);
-    };
-
-    const handleSocketError = (error) => {
-      console.error("Socket error:", error);
-    };
-
-    if (isSocketConnected) {
-      socket.on("registration_success", handleRegistrationSuccess);
-      socket.on("registration_error", handleRegistrationError);
-      socket.on("error", handleSocketError);
-    }
 
     return () => {
-      socket.off("registration_success", handleRegistrationSuccess);
-      socket.off("registration_error", handleRegistrationError);
-      socket.off("error", handleSocketError);
+      socket.off("registration_success", onSuccess);
+      socket.off("registration_error", onError);
     };
-  }, [userName, isRegistered, isSocketConnected]);
+  }, [isSocketConnected, userName, isRegistered]);
 
+  // ── Poll event listeners ─────────────────────────────────────────────────────
+  // ⚠️  CRITICAL BUG FIX: `pollData` is NOT in the dependency array.
+  //     Previously, every `update_stats` changed `pollData`, which re-ran this
+  //     effect (cleanup → re-register), causing the socket listeners to
+  //     constantly tear down / rebuild, effectively breaking click handling.
+  //     Using the functional form of setPollData removes the need for the
+  //     `pollData` dependency entirely.
   useEffect(() => {
-    if (!isRegistered || !isSocketConnected) {
-      return;
-    }
+    if (!isRegistered || !isSocketConnected) return;
 
     const handleNewPoll = (poll) => {
-      console.log("New poll received:", poll);
-
-      const options = poll.options.map((text, index) => ({
-        id: index + 1,
+      const options = poll.options.map((text, idx) => ({
+        id: idx + 1,
         text,
         votes: 0,
       }));
-
       setPollData({ question: poll.question, options });
       setIsPollActive(true);
       setTimeLeft(poll.duration || 60);
       setHasVoted(false);
       setShowResults(false);
-      setIsActive(true);
+      setIsTimerActive(true);
       setSelectedOption(null);
+      setTotalVoters(0);
     };
 
+    // Functional setter — no stale closure, no `pollData` dependency needed
     const handleUpdateStats = (result) => {
-      console.log("Stats update received:", result);
-
-      if (!pollData) return;
-
-      const newOptions = pollData.options.map((option, index) => ({
-        ...option,
-        votes: result.counts[index] || 0,
-      }));
-
-      setPollData({ ...pollData, options: newOptions });
+      setPollData((prev) => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          options: prev.options.map((opt, idx) => ({
+            ...opt,
+            votes: result.counts?.[idx] ?? 0,
+          })),
+        };
+      });
+      setTotalVoters(result.totalResponses ?? 0);
     };
 
     const handlePollEnded = (result) => {
-      console.log("Poll ended:", result);
-      setIsActive(false);
+      setIsTimerActive(false);
       setShowResults(true);
+      setIsPollActive(false);
+      if (result?.counts) {
+        setPollData((prev) => {
+          if (!prev) return prev;
+          return {
+            ...prev,
+            options: prev.options.map((opt, idx) => ({
+              ...opt,
+              votes: result.counts[idx] ?? 0,
+            })),
+          };
+        });
+      }
+      setTotalVoters(result?.totalResponses ?? 0);
     };
 
-    const handleAnswerSubmitted = ({ selectedIndex, isCorrect }) => {
-      console.log("Answer submitted confirmation:", {
-        selectedIndex,
-        isCorrect,
-      });
+    const handleCurrentPoll = (poll) => {
+      if (poll) handleNewPoll(poll);
+    };
+
+    const handleKicked = () => {
+      alert("You have been removed from the session by the teacher.");
+      navigate("/");
     };
 
     socket.emit("get_current_poll");
-
     socket.on("new_poll", handleNewPoll);
     socket.on("update_stats", handleUpdateStats);
     socket.on("poll_ended", handlePollEnded);
-    socket.on("answer_submitted", handleAnswerSubmitted);
-    socket.on("current_poll", handleNewPoll);
+    socket.on("current_poll", handleCurrentPoll);
+    socket.on("kicked", handleKicked);
 
     return () => {
       socket.off("new_poll", handleNewPoll);
       socket.off("update_stats", handleUpdateStats);
       socket.off("poll_ended", handlePollEnded);
-      socket.off("answer_submitted", handleAnswerSubmitted);
-      socket.off("current_poll", handleNewPoll);
+      socket.off("current_poll", handleCurrentPoll);
+      socket.off("kicked", handleKicked);
     };
-  }, [isRegistered, isSocketConnected, pollData]);
+  }, [isRegistered, isSocketConnected, navigate]); // ← NO pollData!
 
+  // ── Countdown timer ─────────────────────────────────────────────────────────
   useEffect(() => {
-    let interval = null;
-    if (isActive && timeLeft > 0 && !hasVoted && isPollActive) {
-      interval = setInterval(() => {
-        setTimeLeft((prev) => {
-          if (prev <= 1) {
-            setIsActive(false);
-            setShowResults(true);
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
-    }
-    return () => clearInterval(interval);
-  }, [isActive, timeLeft, hasVoted, isPollActive]);
-
-  const formatTime = (seconds) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins.toString().padStart(2, "0")}:${secs
-      .toString()
-      .padStart(2, "0")}`;
-  };
-
-  const calculatePercentages = () => {
-    const total = pollData.options.reduce(
-      (sum, option) => sum + option.votes,
-      0
-    );
-    return pollData.options.map((option) => ({
-      ...option,
-      percentage: total > 0 ? Math.round((option.votes / total) * 100) : 0,
-    }));
-  };
-
-  const getColorIntensity = (percentage) => {
-    if (percentage >= 70) return "bg-[#6766D5]";
-    if (percentage >= 50) return "bg-[#6766D5]";
-    if (percentage >= 30) return "bg-[#6766D5]";
-    if (percentage >= 15) return "bg-[#6766D5]";
-    if (percentage >= 5) return "bg-[#6766D5]";
-    return "bg-gray-200";
-  };
-
-  const handleOptionSelect = (optionId) => {
-    if (!hasVoted && timeLeft > 0 && isActive) {
-      setSelectedOption(optionId);
-    }
-  };
-
-  const handleSubmitVote = () => {
-    if (selectedOption && !hasVoted && timeLeft > 0 && isActive) {
-      console.log("Submitting vote for option:", selectedOption - 1);
-      socket.emit("submit_answer", { selectedIndex: selectedOption - 1 });
-      setHasVoted(true);
+    if (!isTimerActive || hasVoted) return;
+    if (timeLeft <= 0) {
+      setIsTimerActive(false);
       setShowResults(true);
-      setIsActive(false);
+      return;
     }
+    const id = setInterval(() => {
+      setTimeLeft((t) => {
+        if (t <= 1) {
+          setIsTimerActive(false);
+          setShowResults(true);
+          clearInterval(id);
+          return 0;
+        }
+        return t - 1;
+      });
+    }, 1000);
+    return () => clearInterval(id);
+  }, [isTimerActive, hasVoted, timeLeft]);
+
+  // ── Helpers ─────────────────────────────────────────────────────────────────
+  const fmt = (s) =>
+    `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
+
+  const getTotal = () =>
+    pollData ? pollData.options.reduce((s, o) => s + o.votes, 0) : 0;
+
+  const getPct = (votes) => {
+    const t = getTotal();
+    return t > 0 ? Math.round((votes / t) * 100) : 0;
   };
 
-  const optionsWithPercentages = pollData ? calculatePercentages() : [];
-  const totalVotes = optionsWithPercentages.reduce(
-    (sum, option) => sum + option.votes,
-    0
-  );
+  const submitVote = () => {
+    if (!selectedOption || hasVoted || timeLeft <= 0 || !isTimerActive) return;
+    socket.emit("submit_answer", { selectedIndex: selectedOption - 1 });
+    setHasVoted(true);
+    setShowResults(true);
+    setIsTimerActive(false);
+  };
 
-
+  // ── Waiting screen ───────────────────────────────────────────────────────────
   if (!isSocketConnected || !isRegistered || (!isPollActive && !pollData)) {
-    let statusMessage = "Connecting...";
-
-    if (!isSocketConnected) {
-      statusMessage = "Connecting to server...";
-    } else {
-      statusMessage = "Wait for the teacher to ask questions..";
-    }
-
     return (
-      <div className="min-h-screen flex flex-col justify-center items-center px-4 bg-white">
-        <CommonLogo />
-        <p className="text-center font-sora font-semibold text-xl text-gray-700">
-          {statusMessage}
-        </p>
-        <div className="mt-4 text-sm text-gray-500">
-          {userName && `Logged in as: ${userName}`}
-        </div>
-        {!isSocketConnected && (
-          <div className="mt-2 text-xs text-red-500">
-            Connection status: Disconnected
+      <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-slate-50 to-purple-50 px-4">
+        <div className="text-center max-w-sm">
+          <div
+            className="w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg"
+            style={{
+              background: "linear-gradient(135deg, #7565D9, #4D0ACD)",
+            }}
+          >
+            <Zap className="w-10 h-10 text-white" />
           </div>
-        )}
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">
+            {!isSocketConnected ? "Connecting…" : "Waiting for Poll"}
+          </h2>
+          <p className="text-gray-500 text-sm mb-6">
+            {!isSocketConnected
+              ? "Establishing connection to the server…"
+              : `Hi ${userName}! Your teacher will start a poll shortly.`}
+          </p>
+          <div className="flex justify-center space-x-2">
+            {[0, 1, 2].map((i) => (
+              <div
+                key={i}
+                className="w-2.5 h-2.5 rounded-full bg-purple-400 animate-bounce"
+                style={{ animationDelay: `${i * 0.15}s` }}
+              />
+            ))}
+          </div>
+        </div>
         <ChatButton
           isOpen={isChatOpen}
-          onClick={handleChatToggle}
+          onClick={() => {
+            setIsChatOpen((p) => !p);
+            setHasUnreadMessages(false);
+          }}
           hasUnreadMessages={hasUnreadMessages}
         />
         <ChatWindow
@@ -274,163 +257,218 @@ const StudentPollInterface = () => {
     );
   }
 
+  const totalVotes = getTotal();
+
   return (
-    <div className="max-w-3xl mx-auto flex items-center justify-center px-4 min-h-screen">
-      <div className="w-full">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-lg font-semibold text-gray-800">Question</h2>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-purple-50 py-6 px-4">
+      <div className="max-w-xl mx-auto">
+        {/* Status bar */}
+        <div className="flex items-center justify-between mb-5">
+          <div className="flex items-center space-x-2 bg-white rounded-full px-3 py-1.5 shadow-sm border border-gray-100">
+            <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
+            <Users className="w-4 h-4 text-gray-500" />
+            <span className="text-sm text-gray-600 font-medium">
+              {userName}
+            </span>
+          </div>
+
           {!showResults && (
-            <div className="flex items-center space-x-1">
-              <svg
-                className="w-4 h-4 text-red-500"
-                fill="currentColor"
-                viewBox="0 0 20 20"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z"
-                  clipRule="evenodd"
-                />
-              </svg>
-              <span className="text-red-500 font-medium text-sm">
-                {formatTime(timeLeft)}
-              </span>
+            <div
+              className={`flex items-center space-x-2 px-4 py-1.5 rounded-full font-bold text-sm shadow-sm ${
+                timeLeft <= 10
+                  ? "bg-red-500 text-white animate-pulse"
+                  : "bg-white border border-gray-200 text-gray-700"
+              }`}
+            >
+              <Clock className="w-4 h-4" />
+              <span>{fmt(timeLeft)}</span>
             </div>
           )}
         </div>
 
-        <div className="mb-6">
-          <div className="bg-gray-700 text-white p-3 rounded">
-            <p className="text-sm font-medium">{pollData.question}</p>
+        {/* Main poll card */}
+        <div className="bg-white rounded-3xl shadow-xl overflow-hidden border border-gray-100">
+          {/* Question */}
+          <div
+            className="px-7 pt-7 pb-6"
+            style={{
+              background: "linear-gradient(135deg, #7565D9 0%, #4D0ACD 100%)",
+            }}
+          >
+            <p className="text-purple-200 text-xs font-bold uppercase tracking-widest mb-2">
+              Question
+            </p>
+            <h1 className="text-white text-xl font-bold leading-relaxed">
+              {pollData.question}
+            </h1>
+          </div>
+
+          {/* Options */}
+          <div className="p-6 space-y-3">
+            {showResults
+              ? // ── Results view ──────────────────────────────────────────
+                pollData.options.map((opt, idx) => {
+                  const pct = getPct(opt.votes);
+                  const isMine = selectedOption === opt.id;
+                  return (
+                    <div
+                      key={opt.id}
+                      className="relative rounded-2xl overflow-hidden"
+                    >
+                      <div className="relative flex items-center h-14 bg-gray-50 overflow-hidden rounded-2xl">
+                        {/* Progress bar */}
+                        <div
+                          className="absolute left-0 top-0 h-full rounded-2xl transition-all duration-700"
+                          style={{
+                            width: `${pct}%`,
+                            background: isMine
+                              ? "linear-gradient(90deg,#7565D9,#4D0ACD)"
+                              : "linear-gradient(90deg,#E0E7FF,#C7D2FE)",
+                          }}
+                        />
+                        <div className="relative z-10 flex items-center justify-between w-full px-4">
+                          <div className="flex items-center space-x-3">
+                            <span
+                              className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold ${
+                                isMine
+                                  ? "bg-white text-purple-700"
+                                  : "bg-white text-gray-500"
+                              }`}
+                            >
+                              {idx + 1}
+                            </span>
+                            <span
+                              className={`text-sm font-semibold ${
+                                isMine ? "text-white" : "text-gray-700"
+                              }`}
+                            >
+                              {opt.text}
+                            </span>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            {isMine && (
+                              <CheckCircle2 className="w-4 h-4 text-white" />
+                            )}
+                            <span
+                              className={`text-sm font-bold ${
+                                isMine ? "text-white" : "text-gray-600"
+                              }`}
+                            >
+                              {pct}%
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })
+              : // ── Voting view ───────────────────────────────────────────
+                pollData.options.map((opt, idx) => {
+                  const isSelected = selectedOption === opt.id;
+                  const disabled = hasVoted || timeLeft <= 0;
+                  return (
+                    <button
+                      key={opt.id}
+                      id={`option-${opt.id}`}
+                      onClick={() => {
+                        if (!disabled) setSelectedOption(opt.id);
+                      }}
+                      disabled={disabled}
+                      className={`w-full flex items-center space-x-3 h-14 px-4 rounded-2xl border-2 text-left transition-all duration-150 ${
+                        isSelected
+                          ? "border-purple-500 bg-purple-50 shadow-md scale-[1.02]"
+                          : "border-gray-200 bg-white hover:border-purple-300 hover:bg-purple-50/40"
+                      } ${disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer active:scale-[0.99]"}`}
+                    >
+                      <span
+                        className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0 transition-colors ${
+                          isSelected
+                            ? "bg-purple-600 text-white"
+                            : "bg-gray-100 text-gray-600"
+                        }`}
+                      >
+                        {isSelected ? (
+                          <CheckCircle2 className="w-4 h-4" />
+                        ) : (
+                          idx + 1
+                        )}
+                      </span>
+                      <span
+                        className={`flex-1 text-sm font-semibold ${
+                          isSelected ? "text-purple-800" : "text-gray-700"
+                        }`}
+                      >
+                        {opt.text}
+                      </span>
+                    </button>
+                  );
+                })}
+          </div>
+
+          {/* Footer action */}
+          <div className="px-6 pb-6">
+            {showResults ? (
+              <div className="text-center space-y-1">
+                <div className="inline-flex items-center space-x-2 px-4 py-2 rounded-full bg-green-50 text-green-700 text-sm font-semibold">
+                  <CheckCircle2 className="w-4 h-4" />
+                  <span>
+                    {hasVoted ? "Answer submitted!" : "Poll has ended"}
+                  </span>
+                </div>
+                <p className="text-gray-400 text-xs">
+                  {totalVotes} response{totalVotes !== 1 ? "s" : ""} ·
+                  Waiting for next question…
+                </p>
+              </div>
+            ) : (
+              <div className="flex items-center justify-between">
+                <p className="text-sm text-gray-400">
+                  {selectedOption
+                    ? "Ready to submit"
+                    : "Select an option above"}
+                </p>
+                <button
+                  id="submit-vote-btn"
+                  onClick={submitVote}
+                  disabled={!selectedOption || hasVoted || timeLeft <= 0}
+                  className={`flex items-center space-x-2 px-6 py-3 rounded-2xl font-bold text-sm transition-all duration-200 ${
+                    selectedOption && !hasVoted && timeLeft > 0
+                      ? "text-white shadow-lg hover:shadow-xl hover:scale-105 active:scale-95"
+                      : "bg-gray-100 text-gray-400 cursor-not-allowed"
+                  }`}
+                  style={
+                    selectedOption && !hasVoted && timeLeft > 0
+                      ? {
+                          background:
+                            "linear-gradient(135deg,#7565D9,#4D0ACD)",
+                        }
+                      : {}
+                  }
+                >
+                  <Send className="w-4 h-4" />
+                  <span>Submit</span>
+                </button>
+              </div>
+            )}
           </div>
         </div>
 
-        <div className="space-y-3 mb-6">
-          {showResults
-            ? optionsWithPercentages.map((option) => (
-              <div key={option.id} className="relative">
-                <div className="flex items-center">
-                  <div className="flex-1 relative">
-                    <div className="flex items-center bg-gray-100 rounded-md h-10 relative overflow-hidden">
-                      <div
-                        className={`h-full rounded-md transition-all duration-500 ${getColorIntensity(
-                          option.percentage
-                        )}`}
-                        style={{ width: `${option.percentage}%` }}
-                      ></div>
-                      <div className="absolute left-3 flex items-center space-x-2 z-10">
-                        <div className="w-5 h-5 bg-white rounded-full flex items-center justify-center text-xs font-semibold text-gray-700">
-                          {option.id}
-                        </div>
-                        <span
-                          className={`text-sm font-medium ${option.percentage > 30
-                            ? "text-white"
-                            : "text-gray-700"
-                            }`}
-                        >
-                          {option.text}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="ml-3 min-w-16 text-right">
-                    <span className="text-sm font-semibold text-gray-700">
-                      {option.percentage}%
-                    </span>
-                    <div className="text-xs text-gray-500">
-                      {option.votes} votes
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))
-            : pollData.options.map((option) => (
-              <div key={option.id} className="relative">
-                <button
-                  onClick={() => handleOptionSelect(option.id)}
-                  disabled={timeLeft === 0 || hasVoted}
-                  className={`w-full flex items-center bg-gray-100 rounded-md h-10 relative overflow-hidden transition-all duration-200 ${selectedOption === option.id
-                    ? "ring-2 ring-purple-500 bg-purple-50"
-                    : "hover:bg-gray-200"
-                    } ${timeLeft === 0 || hasVoted
-                      ? "opacity-50 cursor-not-allowed"
-                      : "cursor-pointer"
-                    }`}
-                >
-                  {selectedOption === option.id && (
-                    <div className="absolute inset-0 bg-purple-100 opacity-50"></div>
-                  )}
-                  <div className="absolute left-3 flex items-center space-x-2 z-10">
-                    <div
-                      className={`w-5 h-5 rounded-full flex items-center justify-center text-xs font-semibold ${selectedOption === option.id
-                        ? "bg-purple-500 text-white"
-                        : "bg-white text-gray-700"
-                        }`}
-                    >
-                      {option.id}
-                    </div>
-                    <span className="text-sm font-medium text-gray-700">
-                      {option.text}
-                    </span>
-                  </div>
-                </button>
-              </div>
-            ))}
+        {/* Live indicator */}
+        <div className="mt-4 flex items-center justify-center space-x-2 text-gray-400 text-xs">
+          <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
+          <span>
+            Live · {totalVoters} student{totalVoters !== 1 ? "s" : ""}{" "}
+            responded
+          </span>
         </div>
-
-        {showResults ? (
-          <>
-            <div className="mb-4 text-center">
-              <span className="text-sm text-gray-600">
-                Total responses: {totalVotes}
-              </span>
-            </div>
-            <div className="text-center">
-              <p className="text-gray-600 font-medium">
-                Wait for the teacher to ask a new question..
-              </p>
-            </div>
-            <div className="mt-6 flex items-center justify-center space-x-2">
-              <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-              <span className="text-xs text-gray-500">
-                Live results updating
-              </span>
-            </div>
-          </>
-        ) : (
-          <>
-            <div className="flex justify-center mb-4">
-              <button
-                onClick={handleSubmitVote}
-                disabled={!selectedOption || timeLeft === 0 || hasVoted}
-                className={`px-8 py-3 rounded-full font-medium transition-all duration-200 ${selectedOption && timeLeft > 0 && !hasVoted
-                  ? "bg-gradient-to-r from-purple-600 to-purple-800 hover:from-purple-700 hover:to-purple-900 text-white shadow-lg hover:shadow-xl"
-                  : "bg-gray-300 text-gray-500 cursor-not-allowed"
-                  }`}
-              >
-                Submit Answer
-              </button>
-            </div>
-            {timeLeft <= 10 && timeLeft > 0 && (
-              <div className="text-center mb-4">
-                <p className="text-red-600 font-medium text-sm animate-pulse">
-                  Hurry up! Only {timeLeft} seconds left!
-                </p>
-              </div>
-            )}
-            {timeLeft === 0 && (
-              <div className="text-center mb-4">
-                <p className="text-red-600 font-medium">
-                  Time's up! Showing live results...
-                </p>
-              </div>
-            )}
-          </>
-        )}
       </div>
+
       <ChatButton
         isOpen={isChatOpen}
-        onClick={handleChatToggle}
+        onClick={() => {
+          setIsChatOpen((p) => !p);
+          setHasUnreadMessages(false);
+        }}
         hasUnreadMessages={hasUnreadMessages}
       />
       <ChatWindow

@@ -1,93 +1,99 @@
-import { Menu, X } from "lucide-react";
+import { Home, History, LayoutDashboard, Menu, X } from "lucide-react";
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import staricon from "../assets/herosection/staricon.svg";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const role = sessionStorage.getItem("userRole");
+  const location = useLocation();
+
+  const isActive = (path) => location.pathname === path;
+
+  const linkClass = (path) =>
+    `flex items-center space-x-1.5 text-sm font-semibold transition-colors ${
+      isActive(path)
+        ? "text-purple-700"
+        : "text-gray-500 hover:text-purple-700"
+    }`;
 
   return (
-    <nav className="bg-white shadow-md px-6 py-3">
-      <div className="container mx-auto flex justify-between items-center">
-        <Link
-          to="/"
-          className="text-xl font-bold text-[#4D0ACD] hover:text-purple-700 transition"
-        >
-          <div className="flex justify-center">
-            <button
-              className="px-2.5 py-1.5 rounded-3xl"
-              style={{
-                background: "linear-gradient(90deg, #7565D9 0%, #4D0ACD 100%)",
-              }}
-            >
-              <div className="flex items-center space-x-2">
-                <img src={staricon} alt="star icon" className="w-6 h-6" />
-                <span className="font-sora font-semibold text-white text-base">
-                  Poll<span style={{ color: "#C4B5FD" }}>Sync</span>
-                </span>
-              </div>
-            </button>
-          </div>
+    <nav className="bg-white border-b border-gray-100 shadow-sm sticky top-0 z-30">
+      <div className="max-w-5xl mx-auto px-5 py-3 flex items-center justify-between">
+        {/* Brand */}
+        <Link to="/" className="flex items-center">
+          <button
+            className="px-3 py-1.5 rounded-3xl flex items-center space-x-2"
+            style={{
+              background: "linear-gradient(90deg, #7565D9 0%, #4D0ACD 100%)",
+            }}
+          >
+            <img src={staricon} alt="PollSync icon" className="w-5 h-5" />
+            <span className="font-bold text-white text-sm">
+              Poll<span style={{ color: "#C4B5FD" }}>Sync</span>
+            </span>
+          </button>
         </Link>
 
-        <button
-          className="sm:hidden text-[#4D0ACD] focus:outline-none"
-          onClick={() => setIsOpen(!isOpen)}
-        >
-          {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-        </button>
-
-        <div className="hidden sm:flex space-x-4 items-center">
-          <Link
-            to="/"
-            className="text-lg font-semibold text-[#4D0ACD] hover:text-purple-700 transition"
-          >
-            Home
+        {/* Desktop nav */}
+        <div className="hidden sm:flex items-center space-x-6">
+          <Link to="/" className={linkClass("/")}>
+            <Home className="w-4 h-4" />
+            <span>Home</span>
           </Link>
+
           {role === "teacher" && (
             <>
-              <Link
-                to="/poll-history"
-                className="text-lg font-semibold text-[#4D0ACD] hover:text-purple-700 transition"
-              >
-                Poll History
+              <Link to="/teacher-dashboard" className={linkClass("/teacher-dashboard")}>
+                <LayoutDashboard className="w-4 h-4" />
+                <span>Dashboard</span>
               </Link>
-              <Link
-                to="/teacher-dashboard"
-                className="text-lg font-semibold text-[#4D0ACD] hover:text-purple-700 transition"
-              >
-                Go to Question
+              <Link to="/poll-history" className={linkClass("/poll-history")}>
+                <History className="w-4 h-4" />
+                <span>Poll History</span>
               </Link>
             </>
           )}
         </div>
+
+        {/* Mobile hamburger */}
+        <button
+          className="sm:hidden text-gray-500 focus:outline-none"
+          onClick={() => setIsOpen((o) => !o)}
+          aria-label="Toggle menu"
+        >
+          {isOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+        </button>
       </div>
 
+      {/* Mobile menu */}
       {isOpen && (
-        <div className="sm:hidden mt-3 space-y-2 px-4">
+        <div className="sm:hidden bg-white border-t border-gray-100 px-5 py-4 space-y-3">
           <Link
             to="/"
-            className="block text-lg font-semibold text-[#4D0ACD] hover:text-purple-700 transition"
             onClick={() => setIsOpen(false)}
+            className="flex items-center space-x-2 text-sm font-semibold text-gray-600 hover:text-purple-700"
           >
-            Home
+            <Home className="w-4 h-4" />
+            <span>Home</span>
           </Link>
           {role === "teacher" && (
             <>
               <Link
-                to="/poll-history"
-                className="block text-lg font-semibold text-[#4D0ACD] hover:text-purple-700 transition"
+                to="/teacher-dashboard"
                 onClick={() => setIsOpen(false)}
+                className="flex items-center space-x-2 text-sm font-semibold text-gray-600 hover:text-purple-700"
               >
-                Poll History
+                <LayoutDashboard className="w-4 h-4" />
+                <span>Dashboard</span>
               </Link>
               <Link
-                to="/teacher-dashboard"
-                className="block text-lg font-semibold text-[#4D0ACD] hover:text-purple-700 transition"
+                to="/poll-history"
                 onClick={() => setIsOpen(false)}
+                className="flex items-center space-x-2 text-sm font-semibold text-gray-600 hover:text-purple-700"
               >
-                Go to Question
+                <History className="w-4 h-4" />
+                <span>Poll History</span>
               </Link>
             </>
           )}
